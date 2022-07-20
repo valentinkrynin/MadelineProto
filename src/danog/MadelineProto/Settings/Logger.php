@@ -94,7 +94,7 @@ class Logger extends SettingsAbstract
     {
         return $this->extra instanceof \Closure
             ? ['type', 'extra', 'level', 'maxSize']
-            : ['type', 'level', 'maxSize'];
+            : ['type', 'extra', 'level', 'maxSize'];
     }
     /**
      * Wakeup function.
