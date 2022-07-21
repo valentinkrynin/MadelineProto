@@ -52,7 +52,7 @@ final class ExitFailure
     {
         $previous = $this->previous ? $this->previous->getException() : null;
 
-        $exception = ($this->type == 'FilesystemException') ? new $this->type($this->message, $previous) : new $this->type($this->message, $this->code, $previous);
+        $exception = ($this->type == 'Amp\File\FilesystemException') ? new $this->type($this->message, $previous) : new $this->type($this->message, $this->code, $previous);
         if ($this->tlTrace) {
             $exception->setTLTrace($this->tlTrace);
         }
