@@ -114,7 +114,12 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
                     while (!$yielded instanceof Promise) {
                         if (!$this->generator->valid()) {
                             if (PHP_MAJOR_VERSION >= 7) {
-                                $this->resolve($this->generator->getReturn());
+                                try {
+                                    $returned = $this->generator->getReturn();
+                                    $this->resolve($returned);
+                                } catch (\Exception $e) {
+                                    $this->resolve(null);
+                                }
                             } else {
                                 $this->resolve(null);
                             }
