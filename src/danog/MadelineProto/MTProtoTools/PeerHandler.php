@@ -816,7 +816,7 @@ trait PeerHandler
     /**
      * Refresh peer cache for a certain peer.
      *
-     * @param mixed $id
+     * @param mixed $id The peer to refresh
      * @return \Generator
      */
     public function refreshPeerCache($id): \Generator
@@ -831,12 +831,12 @@ trait PeerHandler
     /**
      * Refresh full peer cache for a certain peer.
      *
-     * @param mixed $id
+     * @param mixed $id The peer to refresh
      * @return \Generator
      */
     public function refreshFullPeerCache($id): \Generator
     {
-        yield $this->full_chats->unset((yield from $this->getInfo($id))['bot_api_id']);
+        yield $this->full_chats->unset((yield from $this->getFullInfo($id))['bot_api_id']);
         yield from $this->getFullInfo($id);
     }
     /**
@@ -871,7 +871,7 @@ trait PeerHandler
         switch ($partial['type']) {
             case 'user':
             case 'bot':
-                $full = yield from $this->methodCallAsyncRead('users.getFullUser', ['id' => $partial['InputUser']]);
+                $full = (yield from $this->methodCallAsyncRead('users.getFullUser', ['id' => $partial['InputUser']]))['full_user'];
                 break;
             case 'chat':
                 $full = (yield from $this->methodCallAsyncRead('messages.getFullChat', $partial))['full_chat'];

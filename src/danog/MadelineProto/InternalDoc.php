@@ -5869,7 +5869,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function after($a, $b)
+    public static function after($a, $b)
     {
         return \danog\MadelineProto\Tools::after($a, $b);
     }
@@ -5881,7 +5881,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function all(array $promises)
+    public static function all(array $promises)
     {
         return \danog\MadelineProto\Tools::all($promises);
     }
@@ -5892,7 +5892,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function any(array $promises)
+    public static function any(array $promises)
     {
         return \danog\MadelineProto\Tools::any($promises);
     }
@@ -5903,7 +5903,7 @@ class InternalDoc extends APIFactory
      *
      * @return array
      */
-    public function arr(...$params): array
+    public static function arr(...$params): array
     {
         return \danog\MadelineProto\Tools::arr(...$params);
     }
@@ -5914,7 +5914,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function base64urlDecode(string $data): string
+    public static function base64urlDecode(string $data): string
     {
         return \danog\MadelineProto\Tools::base64urlDecode($data);
     }
@@ -5925,7 +5925,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function base64urlEncode(string $data): string
+    public static function base64urlEncode(string $data): string
     {
         return \danog\MadelineProto\Tools::base64urlEncode($data);
     }
@@ -5934,11 +5934,12 @@ class InternalDoc extends APIFactory
      *
      * @param array $arguments Arguments
      *
-     * @return \Amp\Promise<array>
+     * @psalm-return array|\Amp\Promise<array>
+     * @return mixed
      */
-    public function botAPIToMTProto(array $arguments, array $extra = [])
+    public function botAPIToMTProto(array $arguments)
     {
-        return $this->__call(__FUNCTION__, [$arguments, $extra]);
+        return $this->__call(__FUNCTION__, [$arguments]);
     }
     /**
      * Login as bot.
@@ -5962,7 +5963,7 @@ class InternalDoc extends APIFactory
      * @return \Amp\Promise
      * @psalm-return Promise<TReturn>
      */
-    public function call($promise)
+    public static function call($promise)
     {
         return \danog\MadelineProto\Tools::call($promise);
     }
@@ -5977,7 +5978,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise|mixed
      */
-    public function callFork($promise, $actual = null, $file = '')
+    public static function callFork($promise, $actual = null, $file = '')
     {
         return \danog\MadelineProto\Tools::callFork($promise, $actual, $file);
     }
@@ -5988,7 +5989,7 @@ class InternalDoc extends APIFactory
      *
      * @return void
      */
-    public function callForkDefer($promise): void
+    public static function callForkDefer($promise): void
     {
         \danog\MadelineProto\Tools::callForkDefer($promise);
     }
@@ -6029,7 +6030,7 @@ class InternalDoc extends APIFactory
      *
      * @return void
      */
-    public function closeConnection($message)
+    public static function closeConnection($message)
     {
         return \danog\MadelineProto\Tools::closeConnection($message);
     }
@@ -6244,7 +6245,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function echo(string $string)
+    public static function echo(string $string)
     {
         return \danog\MadelineProto\Tools::echo($string);
     }
@@ -6255,7 +6256,7 @@ class InternalDoc extends APIFactory
      *
      * @return mixed
      */
-    public function end(array $what)
+    public static function end(array $what)
     {
         return \danog\MadelineProto\Tools::end($what);
     }
@@ -6277,7 +6278,7 @@ class InternalDoc extends APIFactory
      *
      * @return ?array
      */
-    public function extractBotAPIFile(array $info): ?array
+    public static function extractBotAPIFile(array $info): ?array
     {
         return \danog\MadelineProto\MTProto::extractBotAPIFile($info);
     }
@@ -6301,7 +6302,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function first(array $promises)
+    public static function first(array $promises)
     {
         return \danog\MadelineProto\Tools::first($promises);
     }
@@ -6317,7 +6318,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise<$token is null ? callable : ?callable>
      */
-    public function flock(string $file, int $operation, float $polling = 0.1, ?\Amp\Promise $token = null, $failureCb = null)
+    public static function flock(string $file, int $operation, float $polling = 0.1, ?\Amp\Promise $token = null, $failureCb = null)
     {
         return \danog\MadelineProto\Tools::flock($file, $operation, $polling, $token, $failureCb);
     }
@@ -6328,7 +6329,7 @@ class InternalDoc extends APIFactory
      *
      * @return int
      */
-    public function fromSupergroup($id): int
+    public static function fromSupergroup($id): int
     {
         return \danog\MadelineProto\MTProto::fromSupergroup($id);
     }
@@ -6359,7 +6360,7 @@ class InternalDoc extends APIFactory
      *
      * @return string Vector hash
      */
-    public function genVectorHash(array $ints): string
+    public static function genVectorHash(array $ints): string
     {
         return \danog\MadelineProto\Tools::genVectorHash($ints);
     }
@@ -6507,7 +6508,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function getExtensionFromLocation($location, string $default): string
+    public static function getExtensionFromLocation($location, string $default): string
     {
         return \danog\MadelineProto\TL\Conversion\Extension::getExtensionFromLocation($location, $default);
     }
@@ -6518,7 +6519,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function getExtensionFromMime(string $mime): string
+    public static function getExtensionFromMime(string $mime): string
     {
         return \danog\MadelineProto\TL\Conversion\Extension::getExtensionFromMime($mime);
     }
@@ -6540,7 +6541,7 @@ class InternalDoc extends APIFactory
      *
      * @return ?int
      */
-    public function getFolderId($id): ?int
+    public static function getFolderId($id): ?int
     {
         return \danog\MadelineProto\MTProto::getFolderId($id);
     }
@@ -6672,7 +6673,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function getMimeFromBuffer(string $buffer): string
+    public static function getMimeFromBuffer(string $buffer): string
     {
         return \danog\MadelineProto\TL\Conversion\Extension::getMimeFromBuffer($buffer);
     }
@@ -6684,7 +6685,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function getMimeFromExtension(string $extension, string $default): string
+    public static function getMimeFromExtension(string $extension, string $default): string
     {
         return \danog\MadelineProto\TL\Conversion\Extension::getMimeFromExtension($extension, $default);
     }
@@ -6695,7 +6696,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function getMimeFromFile(string $file): string
+    public static function getMimeFromFile(string $file): string
     {
         return \danog\MadelineProto\TL\Conversion\Extension::getMimeFromFile($file);
     }
@@ -6804,7 +6805,7 @@ class InternalDoc extends APIFactory
      * @return mixed
      * @access public
      */
-    public function getVar($obj, string $var)
+    public static function getVar($obj, string $var)
     {
         return \danog\MadelineProto\Tools::getVar($obj, $var);
     }
@@ -6880,7 +6881,7 @@ class InternalDoc extends APIFactory
      * @return bool
      * @access public
      */
-    public function hasVar($obj, string $var): bool
+    public static function hasVar($obj, string $var): bool
     {
         return \danog\MadelineProto\Tools::hasVar($obj, $var);
     }
@@ -6903,7 +6904,7 @@ class InternalDoc extends APIFactory
      *
      * @return string JPG payload
      */
-    public function inflateStripped(string $stripped): string
+    public static function inflateStripped(string $stripped): string
     {
         return \danog\MadelineProto\Tools::inflateStripped($stripped);
     }
@@ -6922,7 +6923,7 @@ class InternalDoc extends APIFactory
      *
      * @return boolean
      */
-    public function isAltervista(): bool
+    public static function isAltervista(): bool
     {
         return \danog\MadelineProto\Tools::isAltervista();
     }
@@ -6933,7 +6934,7 @@ class InternalDoc extends APIFactory
      *
      * @return boolean
      */
-    public function isArrayOrAlike($var): bool
+    public static function isArrayOrAlike($var): bool
     {
         return \danog\MadelineProto\Tools::isArrayOrAlike($var);
     }
@@ -6971,7 +6972,7 @@ class InternalDoc extends APIFactory
      *
      * @return boolean
      */
-    public function isSupergroup($id): bool
+    public static function isSupergroup($id): bool
     {
         return \danog\MadelineProto\MTProto::isSupergroup($id);
     }
@@ -7025,7 +7026,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function markdownEscape(string $hwat): string
+    public static function markdownEscape(string $hwat): string
     {
         return \danog\MadelineProto\StrTools::markdownEscape($hwat);
     }
@@ -7035,9 +7036,9 @@ class InternalDoc extends APIFactory
      * @param string  $text   Text
      * @param integer $length Length
      *
-     * @return array
+     * @return array<string>
      */
-    public function mbStrSplit(string $text, int $length): array
+    public static function mbStrSplit(string $text, int $length): array
     {
         return \danog\MadelineProto\StrTools::mbStrSplit($text, $length);
     }
@@ -7048,7 +7049,7 @@ class InternalDoc extends APIFactory
      *
      * @return float|int
      */
-    public function mbStrlen(string $text)
+    public static function mbStrlen(string $text)
     {
         return \danog\MadelineProto\StrTools::mbStrlen($text);
     }
@@ -7061,7 +7062,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function mbSubstr(string $text, int $offset, $length = null): string
+    public static function mbSubstr(string $text, int $offset, $length = null): string
     {
         return \danog\MadelineProto\StrTools::mbSubstr($text, $offset, $length);
     }
@@ -7110,7 +7111,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function methodEscape(string $method): string
+    public static function methodEscape(string $method): string
     {
         return \danog\MadelineProto\StrTools::methodEscape($method);
     }
@@ -7121,7 +7122,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function packDouble(float $value): string
+    public static function packDouble(float $value): string
     {
         return \danog\MadelineProto\Tools::packDouble($value);
     }
@@ -7132,7 +7133,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function packSignedInt(int $value): string
+    public static function packSignedInt(int $value): string
     {
         return \danog\MadelineProto\Tools::packSignedInt($value);
     }
@@ -7143,7 +7144,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function packSignedLong(int $value): string
+    public static function packSignedLong(int $value): string
     {
         return \danog\MadelineProto\Tools::packSignedLong($value);
     }
@@ -7154,7 +7155,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function packUnsignedInt(int $value): string
+    public static function packUnsignedInt(int $value): string
     {
         return \danog\MadelineProto\Tools::packUnsignedInt($value);
     }
@@ -7192,7 +7193,7 @@ class InternalDoc extends APIFactory
      *
      * @return int Modulo
      */
-    public function posmod(int $a, int $b): int
+    public static function posmod(int $a, int $b): int
     {
         return \danog\MadelineProto\Tools::posmod($a, $b);
     }
@@ -7203,7 +7204,7 @@ class InternalDoc extends APIFactory
      *
      * @return string Random string
      */
-    public function random(int $length): string
+    public static function random(int $length): string
     {
         return \danog\MadelineProto\Tools::random($length);
     }
@@ -7214,7 +7215,7 @@ class InternalDoc extends APIFactory
      *
      * @return int
      */
-    public function randomInt(int $modulus = 0): int
+    public static function randomInt(int $modulus = 0): int
     {
         return \danog\MadelineProto\Tools::randomInt($modulus);
     }
@@ -7225,14 +7226,14 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise<string>
      */
-    public function readLine(string $prompt = '')
+    public static function readLine(string $prompt = '')
     {
         return \danog\MadelineProto\Tools::readLine($prompt);
     }
     /**
      * Refresh full peer cache for a certain peer.
      *
-     * @param mixed $id
+     * @param mixed $id The peer to refresh
      * @return \Amp\Promise
      */
     public function refreshFullPeerCache($id, array $extra = [])
@@ -7242,7 +7243,7 @@ class InternalDoc extends APIFactory
     /**
      * Refresh peer cache for a certain peer.
      *
-     * @param mixed $id
+     * @param mixed $id The peer to refresh
      * @return \Amp\Promise
      */
     public function refreshPeerCache($id, array $extra = [])
@@ -7334,7 +7335,7 @@ class InternalDoc extends APIFactory
      *
      * @return void
      */
-    public function rethrow(\Throwable $e, $file = ''): void
+    public static function rethrow(\Throwable $e, $file = ''): void
     {
         \danog\MadelineProto\Tools::rethrow($e, $file);
     }
@@ -7345,7 +7346,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function rleDecode(string $string): string
+    public static function rleDecode(string $string): string
     {
         return \danog\MadelineProto\Tools::rleDecode($string);
     }
@@ -7356,7 +7357,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function rleEncode(string $string): string
+    public static function rleEncode(string $string): string
     {
         return \danog\MadelineProto\Tools::rleEncode($string);
     }
@@ -7379,7 +7380,7 @@ class InternalDoc extends APIFactory
      *
      * @return void
      */
-    public function serializeAll(): void
+    public static function serializeAll(): void
     {
         \danog\MadelineProto\MTProto::serializeAll();
     }
@@ -7440,7 +7441,7 @@ class InternalDoc extends APIFactory
      *
      * @access public
      */
-    public function setVar($obj, string $var, &$val): void
+    public static function setVar($obj, string $var, &$val): void
     {
         \danog\MadelineProto\Tools::setVar($obj, $var, $val);
     }
@@ -7486,7 +7487,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function sleep($time)
+    public static function sleep($time)
     {
         return \danog\MadelineProto\Tools::sleep($time);
     }
@@ -7498,7 +7499,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function some(array $promises)
+    public static function some(array $promises)
     {
         return \danog\MadelineProto\Tools::some($promises);
     }
@@ -7563,7 +7564,7 @@ class InternalDoc extends APIFactory
      *
      * @return \Amp\Promise
      */
-    public function timeout($promise, int $timeout)
+    public static function timeout($promise, int $timeout)
     {
         return \danog\MadelineProto\Tools::timeout($promise, $timeout);
     }
@@ -7589,7 +7590,7 @@ class InternalDoc extends APIFactory
      *
      * @throws \TypeError If $promise is not an instance of \Amp\Promise, \Generator or \React\Promise\PromiseInterface.
      */
-    public function timeoutWithDefault($promise, int $timeout, $default = null)
+    public static function timeoutWithDefault($promise, int $timeout, $default = null)
     {
         return \danog\MadelineProto\Tools::timeoutWithDefault($promise, $timeout, $default);
     }
@@ -7600,7 +7601,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function toCamelCase(string $input): string
+    public static function toCamelCase(string $input): string
     {
         return \danog\MadelineProto\StrTools::toCamelCase($input);
     }
@@ -7611,7 +7612,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function toSnakeCase(string $input): string
+    public static function toSnakeCase(string $input): string
     {
         return \danog\MadelineProto\StrTools::toSnakeCase($input);
     }
@@ -7622,7 +7623,7 @@ class InternalDoc extends APIFactory
      *
      * @return int
      */
-    public function toSupergroup($id): int
+    public static function toSupergroup($id): int
     {
         return \danog\MadelineProto\MTProto::toSupergroup($id);
     }
@@ -7633,7 +7634,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function typeEscape(string $type): string
+    public static function typeEscape(string $type): string
     {
         return \danog\MadelineProto\StrTools::typeEscape($type);
     }
@@ -7644,7 +7645,7 @@ class InternalDoc extends APIFactory
      *
      * @return float
      */
-    public function unpackDouble(string $value): float
+    public static function unpackDouble(string $value): float
     {
         return \danog\MadelineProto\Tools::unpackDouble($value);
     }
@@ -7667,7 +7668,7 @@ class InternalDoc extends APIFactory
      *
      * @return integer
      */
-    public function unpackSignedInt(string $value): int
+    public static function unpackSignedInt(string $value): int
     {
         return \danog\MadelineProto\Tools::unpackSignedInt($value);
     }
@@ -7678,7 +7679,7 @@ class InternalDoc extends APIFactory
      *
      * @return integer
      */
-    public function unpackSignedLong(string $value): int
+    public static function unpackSignedLong(string $value): int
     {
         return \danog\MadelineProto\Tools::unpackSignedLong($value);
     }
@@ -7689,7 +7690,7 @@ class InternalDoc extends APIFactory
      *
      * @return string
      */
-    public function unpackSignedLongString($value): string
+    public static function unpackSignedLongString($value): string
     {
         return \danog\MadelineProto\Tools::unpackSignedLongString($value);
     }
@@ -7852,7 +7853,7 @@ class InternalDoc extends APIFactory
      *
      * @return mixed
      */
-    public function wait($promise, $ignoreSignal = false)
+    public static function wait($promise, $ignoreSignal = false)
     {
         return \danog\MadelineProto\Tools::wait($promise, $ignoreSignal);
     }

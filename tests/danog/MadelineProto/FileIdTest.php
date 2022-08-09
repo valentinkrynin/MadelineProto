@@ -4,53 +4,9 @@ namespace danog\MadelineProto\Test;
 
 use CURLFile;
 use danog\Decoder\FileId;
-use danog\MadelineProto\API;
-use danog\MadelineProto\Logger;
-use PHPUnit\Framework\TestCase;
 
-class FileIdTest extends TestCase
+class FileIdTest extends MadelineTestCase
 {
-    /**
-     * MadelineProto instance.
-     *
-     * @var API
-     */
-    protected static $MadelineProto;
-
-    /**
-     * Setup MadelineProto instance.
-     *
-     * @return void
-     */
-    public static function setUpBeforeClass(): void
-    {
-        self::$MadelineProto = new API(
-            'testing.madeline',
-            [
-                'app_info' => [
-                    'api_id' => \getenv('API_ID'),
-                    'api_hash' => \getenv('API_HASH'),
-                ],
-                'logger' => [
-                    'logger' => Logger::FILE_LOGGER,
-                    'logger_param' => __DIR__.'/../../MadelineProto.log',
-                    'logger_level' => Logger::ULTRA_VERBOSE
-                ]
-            ]
-        );
-        self::$MadelineProto->botLogin(\getenv('BOT_TOKEN'));
-    }
-
-    /**
-     * Teardown.
-     *
-     * @return void
-     */
-    public static function tearDownAfterClass(): void
-    {
-        self::$MadelineProto = null;
-    }
-
     /**
      * Strip file reference from file ID.
      *
@@ -105,7 +61,8 @@ class FileIdTest extends TestCase
     public function testDownload(string $type, string $fileIdStr, string $uniqueFileIdStr, array $fullInfo)
     {
         self::$MadelineProto->logger("Trying to download $fileIdStr");
-        self::$MadelineProto->downloadToFile($fileIdStr, '/dev/null');
+        self::$MadelineProto->downloadToFile($fileIdStr, "/tmp/$fileIdStr");
+        \unlink("/tmp/$fileIdStr");
         $this->assertTrue(true);
     }
     /**
@@ -237,7 +194,7 @@ class FileIdTest extends TestCase
     }
     public function provideChats(): array
     {
-        return [\getenv('DEST'), '@MadelineProto', -559184257];
+        return [\getenv('DEST'), '@MadelineProto'];
     }
     public function provideUrls(): array
     {
