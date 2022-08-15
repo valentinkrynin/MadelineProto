@@ -135,3 +135,6 @@ e.php
 
 tests/db-local.php
 a.php
+
+# MAC OS stuff:
+*.DS_Store
