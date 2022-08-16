@@ -62,7 +62,7 @@ abstract class RunnerAbstract
      * Runner.
      *
      * @param string   $session Session path
-     * @param int      $startup ID
+     * @param int      $startupId
      *
      * @return Promise<true>
      */
