@@ -43,7 +43,7 @@ interface DbArray extends DbType, \ArrayAccess
     /**
      * Set element.
      *
-     * @param string|int $index
+     * @param string|int $key
      * @param mixed      $value
      *
      * @psalm-param T $value
