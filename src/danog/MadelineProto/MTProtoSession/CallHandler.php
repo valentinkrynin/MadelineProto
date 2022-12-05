@@ -136,7 +136,7 @@ trait CallHandler
                 $aargs['multiple'] = true;
             }
             if (isset($args['message']) && \is_string($args['message']) && \mb_strlen($args['message'], 'UTF-8') > (yield from $this->API->getConfig())['message_length_max'] && \mb_strlen($this->API->parseMode($args)['message'], 'UTF-8') > (yield from $this->API->getConfig())['message_length_max']) {
-                $args = (yield from $this->API->splitToChunks($args));
+                $args = $this->API->splitToChunks($args);
                 $promises = [];
                 $aargs['queue'] = $method;
                 $aargs['multiple'] = true;
@@ -173,6 +173,9 @@ trait CallHandler
             true,
             !$this->shared->hasTempAuthKey() && \strpos($method, '.') === false && $method !== 'ping_delay_disconnect'
         );
+        if (isset($aargs['queue'])) {
+            $message->setQueueId($aargs['queue']);
+        }
         if ($method === 'users.getUsers' && $args === ['id' => [['_' => 'inputUserSelf']]] || $method === 'auth.exportAuthorization' || $method === 'updates.getDifference') {
             $message->setUserRelated(true);
         }

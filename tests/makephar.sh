@@ -22,6 +22,11 @@ if [ "$TAG" == "" ]; then
     git tag "$TAG"
 fi
 
+export TEST_SECRET_CHAT=test
+export TEST_USERNAME=danogentili
+export TEST_DESTINATION_GROUPS='["@danogentili"]'
+export MTPROTO_SETTINGS='{"logger":{"logger_level":5}}'
+
 echo "PHP: $php"
 echo "Branch: $BRANCH"
 echo "Commit: $COMMIT"
@@ -38,13 +43,14 @@ k()
 k
 rm -f madeline.phar testing.madeline*
 
-php8.0 $(which composer) update
-#php8.0 vendor/bin/phpunit
-php8.0 vendor/bin/phabel publish -d "$TAG"
+composer update
+#vendor/bin/phpunit tests/danog/MadelineProto/EntitiesTest.php
+
+COMPOSER_TAG="$TAG"
 
 rm -rf vendor*
 git reset --hard
-git checkout "$TAG.9998"
+git checkout "$COMPOSER_TAG"
 
 cd ..
 rm -rf phar
@@ -56,7 +62,7 @@ cd phar
 echo '{
     "name": "danog/madelineprotophar",
     "require": {
-        "danog/madelineproto": "'$TAG'.9998"
+        "danog/madelineproto": "'$COMPOSER_TAG'"
     },
     "authors": [
         {
@@ -70,25 +76,15 @@ echo '{
             "url": "'$madelinePath'",
             "options": {"symlink": false}
         }
-    ],
-    "config": {
-        "allow-plugins": {
-            "phabel/phabel": true
-        }
-    }
+    ]
 }' > composer.json
 php $(which composer) update -vvv --no-cache
 php $(which composer) dumpautoload --optimize
-rm -rf vendor/phabel/phabel/tests* vendor/danog/madelineproto/docs vendor/danog/madelineproto/vendor-bin
+rm -rf vendor/danog/madelineproto/docs vendor/danog/madelineproto/vendor-bin
 cd ..
 
 branch="-$BRANCH"
 cd $madelinePath
-
-export TEST_SECRET_CHAT=test
-export TEST_USERNAME=danogentili
-export TEST_DESTINATION_GROUPS='["@danogentili"]'
-export MTPROTO_SETTINGS='{"logger":{"logger_level":5}}'
 
 db()
 {

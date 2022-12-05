@@ -115,7 +115,6 @@ big
 .vscode/*
 .vscode
 custom.md
-phpunit.xml
 .php_cs.cache
 coverage
 tempConv
@@ -135,6 +134,6 @@ e.php
 
 tests/db-local.php
 a.php
-
-# MAC OS stuff:
-*.DS_Store
+app_test.json
+app.json
+config.json

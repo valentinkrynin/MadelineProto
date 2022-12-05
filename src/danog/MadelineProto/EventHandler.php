@@ -19,6 +19,7 @@
 
 namespace danog\MadelineProto;
 
+use Amp\Sync\LocalMutex;
 use danog\MadelineProto\Db\DbPropertiesTrait;
 
 /**
@@ -33,6 +34,7 @@ abstract class EventHandler extends InternalDoc
      * Whether the event handler was started.
      */
     private bool $startedInternal = false;
+    private ?LocalMutex $startMutex = null;
     /**
      * API instance.
      */
@@ -54,6 +56,23 @@ abstract class EventHandler extends InternalDoc
     final public static function startAndLoop(string $session, SettingsAbstract $settings): void
     {
         $API = new API($session, $settings);
+        $API->startAndLoop(static::class);
+    }
+    /**
+     * Start MadelineProto as a bot and the event handler (enables async).
+     *
+     * Also initializes error reporting, catching and reporting all errors surfacing from the event loop.
+     *
+     * @param string $session Session name
+     * @param string $token Bot token
+     * @param SettingsAbstract $settings Settings
+     *
+     * @return void
+     */
+    final public static function startAndLoopBot(string $session, string $token, SettingsAbstract $settings): void
+    {
+        $API = new API($session, $settings);
+        $API->botLogin($token);
         $API->startAndLoop(static::class);
     }
     /**
@@ -82,16 +101,22 @@ abstract class EventHandler extends InternalDoc
      */
     public function startInternal(): \Generator
     {
-        if ($this->startedInternal) {
-            return;
+        $this->startMutex ??= new LocalMutex;
+        $lock = yield $this->startMutex->acquire();
+        try {
+            if ($this->startedInternal) {
+                return;
+            }
+            if (isset(static::$dbProperties)) {
+                yield from $this->internalInitDb($this->API);
+            }
+            if (\method_exists($this, 'onStart')) {
+                yield $this->onStart();
+            }
+            $this->startedInternal = true;
+        } finally {
+            $lock->release();
         }
-        if (isset(static::$dbProperties)) {
-            yield from $this->internalInitDb($this->API);
-        }
-        if (\method_exists($this, 'onStart')) {
-            yield $this->onStart();
-        }
-        $this->startedInternal = true;
     }
     /**
      * Get peers where to send error reports.

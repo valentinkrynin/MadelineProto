@@ -234,14 +234,14 @@ trait ResponseHandler
         $botAPI = $request->getBotAPI();
         if (isset($response['_']) && !$this->isCdn() && $this->API->getTL()->getConstructors()->findByPredicate($response['_'])['type'] === 'Updates') {
             $body = $request->getBodyOrEmpty();
-            $trimmed = [];
-            if (isset($body['peer'])) {
+            $trimmed = $body;
+            if (isset($trimmed['peer'])) {
                 try {
                     $trimmed['peer'] = \is_string($body['peer']) ? $body['peer'] : $this->API->getId($body['peer']);
                 } catch (\Throwable $e) {
                 }
             }
-            if (isset($body['message'])) {
+            if (isset($trimmed['message'])) {
                 $trimmed['message'] = (string) $body['message'];
             }
             $response['request'] = ['_' => $request->getConstructor(), 'body' => $trimmed];
@@ -349,7 +349,7 @@ trait ResponseHandler
                         $this->session_id = null;
                         $this->shared->setTempAuthKey(null);
                         $this->shared->setPermAuthKey(null);
-                        $this->logger->logger("Auth key not registered in DC {$this->datacenter} with RPC error ${response['error_message']}, resetting temporary and permanent auth keys...", Logger::ERROR);
+                        $this->logger->logger("Auth key not registered in DC {$this->datacenter} with RPC error {$response['error_message']}, resetting temporary and permanent auth keys...", Logger::ERROR);
                         if ($this->API->authorized_dc == $this->datacenter && $this->API->authorized === MTProto::LOGGED_IN) {
                             $this->logger->logger('Permanent auth key was main authorized key, logging out...', Logger::FATAL_ERROR);
                             $this->logger->logger('!!!!!!! WARNING !!!!!!!', Logger::FATAL_ERROR);

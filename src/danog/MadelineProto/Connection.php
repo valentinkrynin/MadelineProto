@@ -34,8 +34,6 @@ use danog\MadelineProto\Stream\ConnectionContext;
 use danog\MadelineProto\Stream\MTProtoTransport\HttpsStream;
 use danog\MadelineProto\Stream\MTProtoTransport\HttpStream;
 use danog\MadelineProto\Stream\StreamInterface;
-use danog\MadelineProto\Stream\Transport\WssStream;
-use danog\MadelineProto\Stream\Transport\WsStream;
 
 /**
  * Connection class.
@@ -347,7 +345,7 @@ class Connection
         if (!isset($this->waiter)) {
             $this->waiter = new HttpWaitLoop($this);
         }
-        if (!isset($this->pinger) && !$this->ctx->isMedia() && !$this->ctx->isCDN()) { // && ($this->ctx->hasStreamName(WssStream::class) || $this->ctx->hasStreamName(WsStream::class))) {
+        if (!isset($this->pinger) && !$this->ctx->isMedia() && !$this->ctx->isCDN()) {
             $this->pinger = new PingLoop($this);
         }
         foreach ($this->new_outgoing as $message_id => $message) {

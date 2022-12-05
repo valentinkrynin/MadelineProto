@@ -29,6 +29,8 @@ use danog\MadelineProto\MTProto;
 use danog\MadelineProto\RPCErrorException;
 
 use danog\MadelineProto\Settings;
+use danog\MadelineProto\TL\TL;
+use danog\MadelineProto\TL\Types\Button;
 use danog\MadelineProto\Tools;
 
 /**
@@ -36,6 +38,7 @@ use danog\MadelineProto\Tools;
  *
  * @extend MTProto
  * @property Settings $settings Settings
+ * @property TL $TL TL
  */
 trait UpdateHandler
 {
@@ -197,8 +200,87 @@ trait UpdateHandler
         return $data;
     }
     /**
-     * Undocumented function.
+     * Extract a message constructor from an Updates constructor.
      *
+     * @psalm-return \Generator<mixed, mixed, mixed, array>
+     */
+    public function extractMessage(array $updates): \Generator
+    {
+        return (yield from $this->extractMessageUpdate($updates))['message'];
+    }
+    /**
+     * Extract an update message constructor from an Updates constructor.
+     *
+     * @psalm-return \Generator<mixed, mixed, mixed, array>
+     */
+    public function extractMessageUpdate(array $updates): \Generator
+    {
+        $result = null;
+        foreach ((yield from $this->extractUpdates($updates)) as $update) {
+            if (\in_array($update['_'], ['updateNewMessage', 'updateNewChannelMessage', 'updateEditMessage', 'updateEditChannelMessage'])) {
+                if ($result !== null) {
+                    throw new \danog\MadelineProto\Exception("Found more than one update of type message, use extractUpdates to extract all updates");
+                }
+                $result = $update;
+            }
+        }
+        if ($result === null) {
+            throw new \danog\MadelineProto\Exception("Could not find any message in the updates!");
+        }
+        return $result;
+    }
+    /**
+     * Extract Update constructors from an Updates constructor.
+     *
+     * @psalm-return \Generator<mixed, mixed, mixed, array<array>>
+     */
+    public function extractUpdates(array $updates): \Generator
+    {
+        switch ($updates['_']) {
+            case 'updates':
+            case 'updatesCombined':
+                return $updates['updates'];
+            case 'updateShort':
+                return [$updates['update']];
+            case 'updateShortSentMessage':
+                $updates['user_id'] = yield from $this->getInfo($updates['request']['body']['peer'], MTProto::INFO_TYPE_ID);
+            // no break
+            case 'updateShortMessage':
+            case 'updateShortChatMessage':
+                $updates = \array_merge($updates['request']['body'] ?? [], $updates);
+                unset($updates['request']);
+                $from_id = isset($updates['from_id']) ? $updates['from_id'] : ($updates['out'] ? $this->authorization['user']['id'] : $updates['user_id']);
+                $to_id = isset($updates['chat_id']) ? -$updates['chat_id'] : ($updates['out'] ? $updates['user_id'] : $this->authorization['user']['id']);
+                $message = $updates;
+                $message['_'] = 'message';
+                $message['from_id'] = yield from $this->getInfo($from_id, MTProto::INFO_TYPE_PEER);
+                $message['peer_id'] = yield from $this->getInfo($to_id, MTProto::INFO_TYPE_PEER);
+                $this->populateMessageFlags($message);
+                return [['_' => 'updateNewMessage', 'message' => $message, 'pts' => $updates['pts'], 'pts_count' => $updates['pts_count']]];
+            default:
+                throw new \danog\MadelineProto\ResponseException('Unrecognized update received: '.$updates['_']);
+        }
+    }
+    private function populateMessageFlags(array &$message): void
+    {
+        $new = ['_' => 'message'];
+        foreach ($this->TL->getConstructors()->findByPredicate('message')['params'] as $param) {
+            if (isset($message[$param['name']]) && $param['name'] !== 'flags') {
+                $new[$param['name']] = $message[$param['name']];
+            } elseif ($param['type'] === 'true') {
+                $new[$param['name']] = false;
+            }
+        }
+        $message = $new;
+        if (isset($message['reply_markup']['rows'])) {
+            foreach ($message['reply_markup']['rows'] as $key => $row) {
+                foreach ($row['buttons'] as $bkey => $button) {
+                    $message['reply_markup']['rows'][$key]['buttons'][$bkey] = $button instanceof Button ? $button : new Button($this, $message, $button);
+                }
+            }
+        }
+    }
+    /**
      * @param array $updates        Updates
      * @param array $actual_updates Actual updates for deferred
      *
@@ -241,11 +323,11 @@ trait UpdateHandler
                     break;
                 }
                 $updates['user_id'] = yield from $this->getInfo($updates['request']['body']['peer'], MTProto::INFO_TYPE_ID);
-                $updates['message'] = $updates['request']['body']['message'];
-                unset($updates['request']);
             // no break
             case 'updateShortMessage':
             case 'updateShortChatMessage':
+                $updates = \array_merge($updates['request']['body'] ?? [], $updates);
+                unset($updates['request']);
                 $from_id = isset($updates['from_id']) ? $updates['from_id'] : ($updates['out'] ? $this->authorization['user']['id'] : $updates['user_id']);
                 $to_id = isset($updates['chat_id']) ? -$updates['chat_id'] : ($updates['out'] ? $updates['user_id'] : $this->authorization['user']['id']);
                 if (!((yield from $this->peerIsset($from_id)) || !((yield from $this->peerIsset($to_id)) || isset($updates['via_bot_id']) && !((yield from $this->peerIsset($updates['via_bot_id'])) || isset($updates['entities']) && !((yield from $this->entitiesPeerIsset($updates['entities'])) || isset($updates['fwd_from']) && !(yield from $this->fwdPeerIsset($updates['fwd_from']))))))) {
@@ -264,6 +346,7 @@ trait UpdateHandler
                     $this->logger->logger('Still did not get user in database, postponing update', \danog\MadelineProto\Logger::ERROR);
                     break;
                 }
+                $this->populateMessageFlags($message);
                 $update = ['_' => 'updateNewMessage', 'message' => $message, 'pts' => $updates['pts'], 'pts_count' => $updates['pts_count']];
                 $this->feeders[yield from $this->feeders[FeedLoop::GENERIC]->feedSingle($update)]->resume();
                 break;

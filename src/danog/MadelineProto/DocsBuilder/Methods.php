@@ -133,10 +133,15 @@ trait Methods
                 if ($param['name'] === 'chat_id' && $method !== 'messages.discardEncryption' && !isset($this->settings['td'])) {
                     $param['type'] = 'InputPeer';
                 }
-                if ($param['name'] === 'hash' && $param['type'] === 'int') {
+                if (!isset($this->tdDescriptions['methods'][$method]['params'][$param['name']])) {
+                    if (isset($this->tdDescriptions['methods'][$method]['description'])) {
+                        $this->tdDescriptions['methods'][$method]['params'][$param['name']] = \danog\MadelineProto\Lang::$lang['en']['method_'.$method.'_param_'.$param['name'].'_type_'.$param['type']] ?? '';
+                    }
+                }
+                if ($param['name'] === 'hash' && ($param['type'] === 'long' || $param['type'] === 'int')) {
                     $param['pow'] = 'hi';
                     $param['type'] = 'Vector t';
-                    $param['subtype'] = 'int';
+                    $param['subtype'] = 'long';
                 }
                 $ptype = $param[$type_or_subtype = isset($param['subtype']) ? 'subtype' : 'type'];
                 switch ($ptype) {
@@ -164,15 +169,10 @@ trait Methods
                     $human_ptype = 'File path or '.$ptype;
                 }
                 $type_or_bare_type = \ctype_upper(Tools::end(\explode('.', $param[$type_or_subtype]))[0]) || \in_array($param[$type_or_subtype], ['!X', 'X', 'bytes', 'true', 'false', 'double', 'string', 'Bool', 'int', 'long', 'int128', 'int256', 'int512', 'int53']) ? 'types' : 'constructors';
-                if (!isset($this->tdDescriptions['methods'][$method]['params'][$param['name']])) {
-                    if (isset($this->tdDescriptions['methods'][$method]['description'])) {
-                        $this->tdDescriptions['methods'][$method]['params'][$param['name']] = \danog\MadelineProto\Lang::$lang['en']['method_'.$method.'_param_'.$param['name'].'_type_'.$param['type']] ?? '';
-                    }
-                }
                 if (isset($this->tdDescriptions['methods'][$method])) {
-                    $table .= '|'.StrTools::markdownEscape($param['name']).'|'.(isset($param['subtype']) ? 'Array of ' : '').'['.StrTools::markdownEscape($human_ptype).'](/API_docs/'.$type_or_bare_type.'/'.$ptype.'.md) | '.$this->tdDescriptions['methods'][$method]['params'][$param['name']].' | '.(isset($param['pow']) || ($id = $this->TL->getConstructors($this->td)->findByPredicate(\lcfirst($param['type']).'Empty')) && $id['type'] === $param['type'] || ($id = $this->TL->getConstructors($this->td)->findByPredicate('input'.$param['type'].'Empty')) && $id['type'] === $param['type'] ? 'Optional' : 'Yes').'|';
+                    $table .= '|'.StrTools::markdownEscape($param['name']).'|'.(isset($param['subtype']) ? 'Array of ' : '').'['.StrTools::markdownEscape($human_ptype).'](/API_docs/'.$type_or_bare_type.'/'.$ptype.'.md) | '.$this->tdDescriptions['methods'][$method]['params'][$param['name']].' | '.(isset($param['pow']) || $param['type'] === 'int' || ($id = $this->TL->getConstructors($this->td)->findByPredicate(\lcfirst($param['type']).'Empty')) && $id['type'] === $param['type'] || ($id = $this->TL->getConstructors($this->td)->findByPredicate('input'.$param['type'].'Empty')) && $id['type'] === $param['type'] ? 'Optional' : 'Yes').'|';
                 } else {
-                    $table .= '|'.StrTools::markdownEscape($param['name']).'|'.(isset($param['subtype']) ? 'Array of ' : '').'['.StrTools::markdownEscape($human_ptype).'](/API_docs/'.$type_or_bare_type.'/'.$ptype.'.md) | '.(isset($param['pow']) || ($id = $this->TL->getConstructors($this->td)->findByPredicate(\lcfirst($param['type']).'Empty')) && $id['type'] === $param['type'] || ($id = $this->TL->getConstructors($this->td)->findByPredicate('input'.$param['type'].'Empty')) && $id['type'] === $param['type'] ? 'Optional' : 'Yes').'|';
+                    $table .= '|'.StrTools::markdownEscape($param['name']).'|'.(isset($param['subtype']) ? 'Array of ' : '').'['.StrTools::markdownEscape($human_ptype).'](/API_docs/'.$type_or_bare_type.'/'.$ptype.'.md) | '.(isset($param['pow']) || ($param['type'] === 'long' && $param['name'] === 'hash')|| ($id = $this->TL->getConstructors($this->td)->findByPredicate(\lcfirst($param['type']).'Empty')) && $id['type'] === $param['type'] || ($id = $this->TL->getConstructors($this->td)->findByPredicate('input'.$param['type'].'Empty')) && $id['type'] === $param['type'] ? 'Optional' : 'Yes').'|';
                 }
                 $table .= PHP_EOL;
                 $pptype = \in_array($ptype, ['string', 'bytes']) ? "'".$ptype."'" : $ptype;
@@ -207,6 +207,11 @@ trait Methods
             $header = $this->template('Method', $method, $description, $redir, StrTools::markdownEscape($method));
             if ($this->td) {
                 $header .= "YOU CANNOT USE THIS METHOD IN MADELINEPROTO\n\n\n\n\n";
+            }
+            if (\in_array($method, ['messages.getHistory', 'messages.getMessages', 'channels.getMessages'])) {
+                $header .= "# Warning: flood wait\n**Warning: this method is prone to rate limiting with flood waits, please use the [updates event handler, instead &raquo;](/docs/UPDATES.html#async-event-driven)**\n\n";
+                $header .= "# Warning: non-realtime results\n**Warning: this method is not suitable for receiving messages in real-time from chats and users, please use the [updates event handler, instead &raquo;](/docs/UPDATES.html#async-event-driven)**\n\n";
+                $header .= "# Warning: this is probably NOT what you need\nYou probably need to use the [updates event handler, instead &raquo;](/docs/UPDATES.html#async-event-driven) :)\n\n";
             }
             $header .= isset($this->tdDescriptions['methods'][$method]) ? $this->tdDescriptions['methods'][$method]['description'].PHP_EOL.PHP_EOL : '';
             $table .= '

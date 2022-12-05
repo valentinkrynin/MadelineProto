@@ -112,7 +112,7 @@ class MTProto extends AsyncConstruct implements TLCallback
      *
      * @var int
      */
-    const V = 158;
+    const V = 161;
     /**
      * Release version.
      *
@@ -559,7 +559,8 @@ class MTProto extends AsyncConstruct implements TLCallback
      * @internal
      * @return array<RSA>
      */
-    public function getRsaKeys(bool $test, bool $cdn): array{
+    public function getRsaKeys(bool $test, bool $cdn): array
+    {
         if ($cdn) {
             return $this->cdn_rsa_keys;
         }
@@ -960,9 +961,6 @@ class MTProto extends AsyncConstruct implements TLCallback
         if (!$this->phoneConfigLoop) {
             $this->phoneConfigLoop = new PeriodicLoopInternal($this, [$this, 'getPhoneConfig'], 'phone config', 24 * 3600 * 1000);
         }
-        if (!$this->checkTosLoop) {
-            $this->checkTosLoop = new PeriodicLoopInternal($this, [$this, 'checkTos'], 'TOS', 24 * 3600 * 1000);
-        }
         if (!$this->configLoop) {
             $this->configLoop = new PeriodicLoopInternal($this, [$this, 'getConfig'], 'config', 24 * 3600 * 1000);
         }
@@ -979,7 +977,6 @@ class MTProto extends AsyncConstruct implements TLCallback
         $this->serializeLoop->start();
         $this->phoneConfigLoop->start();
         $this->configLoop->start();
-        $this->checkTosLoop->start();
         try {
             $this->ipcServer->start();
         } catch (\Throwable $e) {
@@ -1011,10 +1008,6 @@ class MTProto extends AsyncConstruct implements TLCallback
         if ($this->configLoop) {
             $this->configLoop->signal(true);
             $this->configLoop = null;
-        }
-        if ($this->checkTosLoop) {
-            $this->checkTosLoop->signal(true);
-            $this->checkTosLoop = null;
         }
         if ($this->ipcServer) {
             $this->ipcServer->signal(null);
@@ -1540,10 +1533,12 @@ class MTProto extends AsyncConstruct implements TLCallback
     public function hasAllAuth(): bool
     {
         if ($this->isInitingAuthorization()) {
+            $this->logger("Initing auth");
             return false;
         }
-        foreach ($this->datacenter->getDataCenterConnections() as $dc) {
+        foreach ($this->datacenter->getDataCenterConnections() as $id => $dc) {
             if ((!$dc->isAuthorized() || !$dc->hasTempAuthKey()) && !$dc->isCDN()) {
+                $this->logger("Initing auth $id");
                 return false;
             }
         }
@@ -1701,7 +1696,8 @@ class MTProto extends AsyncConstruct implements TLCallback
             if (!isset($this->secretFeeders[$id])) {
                 $this->secretFeeders[$id] = new SecretFeedLoop($this, $id);
             }
-            if ($this->secretFeeders[$id]->start() && isset($this->secretFeeders[$id])) {
+            $this->secretFeeders[$id]->start();
+            if (isset($this->secretFeeders[$id])) {
                 $this->secretFeeders[$id]->resume();
             }
         }
@@ -1721,17 +1717,18 @@ class MTProto extends AsyncConstruct implements TLCallback
             if (!isset($this->updaters[$channelId])) {
                 $this->updaters[$channelId] = new UpdateLoop($this, $channelId);
             }
-            if ($this->feeders[$channelId]->start() && isset($this->feeders[$channelId])) {
+            $this->feeders[$channelId]->start();
+            if (isset($this->feeders[$channelId])) {
                 $this->feeders[$channelId]->resume();
             }
-            if ($this->updaters[$channelId]->start() && isset($this->updaters[$channelId])) {
+            $this->updaters[$channelId]->start();
+            if (isset($this->updaters[$channelId])) {
                 $this->updaters[$channelId]->resume();
             }
         }
         $this->flushAll();
-        if ($this->seqUpdater->start()) {
-            $this->seqUpdater->resume();
-        }
+        $this->seqUpdater->start();
+        $this->seqUpdater->resume();
     }
     /**
      * Flush all datacenter connections.
@@ -1812,7 +1809,8 @@ class MTProto extends AsyncConstruct implements TLCallback
     /**
      * @internal
      */
-    public function addConfig(array $config): void {
+    public function addConfig(array $config): void
+    {
         $this->config = $config;
     }
     /**
