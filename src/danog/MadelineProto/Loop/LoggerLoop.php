@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Loop logging trait.
  *
@@ -10,23 +13,17 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  * @author    Daniil Gentili <daniil@daniil.it>
- * @copyright 2016-2020 Daniil Gentili <daniil@daniil.it>
+ * @copyright 2016-2023 Daniil Gentili <daniil@daniil.it>
  * @license   https://opensource.org/licenses/AGPL-3.0 AGPLv3
- *
  * @link https://docs.madelineproto.xyz MadelineProto documentation
  */
 
 namespace danog\MadelineProto\Loop;
 
 use danog\MadelineProto\Logger;
-use danog\MadelineProto\Tools;
 
 trait LoggerLoop
 {
-    /**
-     * Whether the loop was started.
-     */
-    private bool $started = false;
     /**
      * Logger instance.
      */
@@ -42,57 +39,19 @@ trait LoggerLoop
     }
 
     /**
-     * Start the loop.
-     *
-     * Returns false if the loop is already running.
-     *
-     * @return bool
-     */
-    public function start(): bool
-    {
-        if ($this->started) {
-            return false;
-        }
-        Tools::callFork((function (): \Generator {
-            $this->startedLoop();
-            try {
-                yield from $this->loop();
-            } finally {
-                $this->exitedLoop();
-            }
-        })());
-        return true;
-    }
-    /**
-     * Check whether loop is running.
-     *
-     * @return boolean
-     */
-    public function isRunning(): bool
-    {
-        return $this->started;
-    }
-
-    /**
      * Signal that loop has started.
-     *
-     * @return void
      */
     protected function startedLoop(): void
     {
-        $this->started = true;
         $this->logger->logger("Entered $this", Logger::ULTRA_VERBOSE);
         parent::startedLoop();
     }
 
     /**
      * Signal that loop has exited.
-     *
-     * @return void
      */
     protected function exitedLoop(): void
     {
-        $this->started = false;
         $this->logger->logger("Exited $this", Logger::ULTRA_VERBOSE);
         parent::exitedLoop();
     }
@@ -101,21 +60,17 @@ trait LoggerLoop
      * Report pause, can be overriden for logging.
      *
      * @param integer $timeout Pause duration, 0 = forever
-     *
-     * @return void
      */
     protected function reportPause(int $timeout): void
     {
         $this->logger->logger(
             "Pausing $this for $timeout",
-            Logger::ULTRA_VERBOSE
+            Logger::ULTRA_VERBOSE,
         );
     }
 
     /**
      * Get loop name.
-     *
-     * @return string
      */
     abstract public function __toString(): string;
 }

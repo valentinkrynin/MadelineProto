@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * EventHandler module.
  *
@@ -11,16 +13,18 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  * @author    Daniil Gentili <daniil@daniil.it>
- * @copyright 2016-2020 Daniil Gentili <daniil@daniil.it>
+ * @copyright 2016-2023 Daniil Gentili <daniil@daniil.it>
  * @license   https://opensource.org/licenses/AGPL-3.0 AGPLv3
- *
  * @link https://docs.madelineproto.xyz MadelineProto documentation
  */
 
 namespace danog\MadelineProto;
 
+use Amp\DeferredFuture;
+use Amp\Future;
 use Amp\Sync\LocalMutex;
 use danog\MadelineProto\Db\DbPropertiesTrait;
+use Generator;
 
 /**
  * Event handler.
@@ -39,8 +43,9 @@ abstract class EventHandler extends InternalDoc
      * API instance.
      */
     protected MTProto $API;
-    public function __construct($API) // BC
+    public function __construct($API)
     {
+        // BC
     }
 
     /**
@@ -50,8 +55,6 @@ abstract class EventHandler extends InternalDoc
      *
      * @param string $session Session name
      * @param SettingsAbstract $settings Settings
-     *
-     * @return void
      */
     final public static function startAndLoop(string $session, SettingsAbstract $settings): void
     {
@@ -66,8 +69,6 @@ abstract class EventHandler extends InternalDoc
      * @param string $session Session name
      * @param string $token Bot token
      * @param SettingsAbstract $settings Settings
-     *
-     * @return void
      */
     final public static function startAndLoopBot(string $session, string $token, SettingsAbstract $settings): void
     {
@@ -79,10 +80,7 @@ abstract class EventHandler extends InternalDoc
      * Internal constructor.
      *
      * @internal
-     *
      * @param APIWrapper $MadelineProto MadelineProto instance
-     *
-     * @return void
      */
     public function initInternal(APIWrapper $MadelineProto): void
     {
@@ -92,36 +90,52 @@ abstract class EventHandler extends InternalDoc
             $this->{$namespace} = $this->exportNamespace($namespace);
         }
     }
+    private ?Future $startFuture = null;
     /**
      * Start method handler.
      *
      * @internal
-     *
-     * @return \Generator
      */
-    public function startInternal(): \Generator
+    public function startInternal(): void
     {
         $this->startMutex ??= new LocalMutex;
-        $lock = yield $this->startMutex->acquire();
+        $startDeferred = new DeferredFuture;
+        $this->startFuture = $startDeferred->getFuture();
+        $lock = $this->startMutex->acquire();
         try {
             if ($this->startedInternal) {
                 return;
             }
             if (isset(static::$dbProperties)) {
-                yield from $this->internalInitDb($this->API);
+                $this->internalInitDb($this->API);
             }
             if (\method_exists($this, 'onStart')) {
-                yield $this->onStart();
+                $r = $this->onStart();
+                if ($r instanceof Generator) {
+                    $r = Tools::consumeGenerator($r);
+                }
+                if ($r instanceof Future) {
+                    $r = $r->await();
+                }
             }
             $this->startedInternal = true;
         } finally {
+            $this->startFuture = null;
+            $startDeferred->complete();
             $lock->release();
         }
     }
     /**
+     * @internal
+     */
+    public function waitForStartInternal(): void
+    {
+        $this->startFuture?->await();
+    }
+    /**
      * Get peers where to send error reports.
      *
-     * @return array|string|int
+     * @return string|int|array<string|int>
      */
     public function getReportPeers()
     {
@@ -130,8 +144,6 @@ abstract class EventHandler extends InternalDoc
 
     /**
      * Get API instance.
-     *
-     * @return MTProto
      */
     public function getAPI(): MTProto
     {

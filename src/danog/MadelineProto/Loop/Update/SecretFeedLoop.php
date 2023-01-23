@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Update feeder loop.
  *
@@ -11,15 +13,15 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  * @author    Daniil Gentili <daniil@daniil.it>
- * @copyright 2016-2020 Daniil Gentili <daniil@daniil.it>
+ * @copyright 2016-2023 Daniil Gentili <daniil@daniil.it>
  * @license   https://opensource.org/licenses/AGPL-3.0 AGPLv3
- *
  * @link https://docs.madelineproto.xyz MadelineProto documentation
  */
 
 namespace danog\MadelineProto\Loop\Update;
 
 use danog\Loop\ResumableSignalLoop;
+use danog\MadelineProto\Loop\AuthLoop;
 use danog\MadelineProto\Loop\InternalLoop;
 use danog\MadelineProto\MTProto;
 use danog\MadelineProto\SecurityException;
@@ -29,11 +31,12 @@ use danog\MadelineProto\SecurityException;
  *
  * @author Daniil Gentili <daniil@daniil.it>
  */
-class SecretFeedLoop extends ResumableSignalLoop
+final class SecretFeedLoop extends ResumableSignalLoop
 {
     use InternalLoop {
         __construct as private init;
     }
+    use AuthLoop;
     /**
      * Incoming secret updates array.
      */
@@ -55,13 +58,11 @@ class SecretFeedLoop extends ResumableSignalLoop
     }
     /**
      * Main loop.
-     *
-     * @return \Generator
      */
-    public function loop(): \Generator
+    public function loop(): void
     {
         $API = $this->API;
-        if (yield from $this->waitForAuthOrSignal()) {
+        if ($this->waitForAuthOrSignal()) {
             return;
         }
         while (true) {
@@ -71,7 +72,7 @@ class SecretFeedLoop extends ResumableSignalLoop
                 $this->incomingUpdates = [];
                 foreach ($updates as $update) {
                     try {
-                        if (!yield from $API->handleEncryptedUpdate($update)) {
+                        if (!$API->handleEncryptedUpdate($update)) {
                             $API->logger->logger("Secret chat deleted, exiting $this...");
                             unset($API->secretFeeders[$this->secretId]);
                             return;
@@ -84,16 +85,13 @@ class SecretFeedLoop extends ResumableSignalLoop
                 }
                 $updates = null;
             }
-            if (yield from $this->waitForAuthOrSignal()) {
+            if ($this->waitForAuthOrSignal()) {
                 return;
             }
         }
     }
     /**
      * Feed incoming update to loop.
-     *
-     * @param array $update
-     * @return void
      */
     public function feed(array $update): void
     {

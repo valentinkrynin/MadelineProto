@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Update feeder loop.
  *
@@ -11,9 +13,8 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  * @author    Daniil Gentili <daniil@daniil.it>
- * @copyright 2016-2020 Daniil Gentili <daniil@daniil.it>
+ * @copyright 2016-2023 Daniil Gentili <daniil@daniil.it>
  * @license   https://opensource.org/licenses/AGPL-3.0 AGPLv3
- *
  * @link https://docs.madelineproto.xyz MadelineProto documentation
  */
 
@@ -21,6 +22,7 @@ namespace danog\MadelineProto\Loop\Update;
 
 use danog\Loop\ResumableSignalLoop;
 use danog\MadelineProto\Logger;
+use danog\MadelineProto\Loop\AuthLoop;
 use danog\MadelineProto\Loop\InternalLoop;
 use danog\MadelineProto\MTProtoTools\UpdatesState;
 
@@ -29,9 +31,10 @@ use danog\MadelineProto\MTProtoTools\UpdatesState;
  *
  * @author Daniil Gentili <daniil@daniil.it>
  */
-class SeqLoop extends ResumableSignalLoop
+final class SeqLoop extends ResumableSignalLoop
 {
     use InternalLoop;
+    use AuthLoop;
     /**
      * Incoming updates.
      */
@@ -50,23 +53,21 @@ class SeqLoop extends ResumableSignalLoop
     private ?UpdatesState $state = null;
     /**
      * Main loop.
-     *
-     * @return \Generator
      */
-    public function loop(): \Generator
+    public function loop(): void
     {
         $API = $this->API;
         $this->feeder = $API->feeders[FeedLoop::GENERIC];
-        if (yield from $this->waitForAuthOrSignal()) {
+        if ($this->waitForAuthOrSignal()) {
             return;
         }
-        $this->state = (yield from $API->loadUpdateState());
+        $this->state = ($API->loadUpdateState());
         while (true) {
             $API->logger->logger("Resumed $this!", Logger::LEVEL_ULTRA_VERBOSE);
             while ($this->incomingUpdates) {
                 $updates = $this->incomingUpdates;
                 $this->incomingUpdates = [];
-                yield from $this->parse($updates);
+                $this->parse($updates);
                 $updates = null;
             }
             while ($this->pendingWakeups) {
@@ -77,12 +78,12 @@ class SeqLoop extends ResumableSignalLoop
                     $this->API->feeders[$channelId]->resume();
                 }
             }
-            if (yield from $this->waitForAuthOrSignal()) {
+            if ($this->waitForAuthOrSignal()) {
                 return;
             }
         }
     }
-    public function parse(array $updates): \Generator
+    public function parse(array $updates): void
     {
         \reset($updates);
         while ($updates) {
@@ -95,42 +96,42 @@ class SeqLoop extends ResumableSignalLoop
             $seq_end = $options['seq_end'];
             $result = $this->state->checkSeq($seq_start);
             if ($result > 0) {
-                $this->API->logger->logger('Seq hole. seq_start: '.$seq_start.' != cur seq: '.($this->state->seq() + 1), \danog\MadelineProto\Logger::ERROR);
-                yield $this->pause(1000);
+                $this->API->logger->logger('Seq hole. seq_start: '.$seq_start.' != cur seq: '.($this->state->seq() + 1), Logger::ERROR);
+                $this->pause(1000);
                 if (!$this->incomingUpdates) {
-                    yield $this->API->updaters[UpdateLoop::GENERIC]->resume();
+                    $this->API->updaters[UpdateLoop::GENERIC]->resume();
                 }
                 $this->incomingUpdates = \array_merge($this->incomingUpdates, [$update], $updates);
                 continue;
             }
             if ($result < 0) {
-                $this->API->logger->logger('Seq too old. seq_start: '.$seq_start.' != cur seq: '.($this->state->seq() + 1), \danog\MadelineProto\Logger::ERROR);
+                $this->API->logger->logger('Seq too old. seq_start: '.$seq_start.' != cur seq: '.($this->state->seq() + 1), Logger::ERROR);
                 continue;
             }
             $this->state->seq($seq_end);
             if (isset($options['date'])) {
                 $this->state->date($options['date']);
             }
-            yield from $this->save($update);
+            $this->save($update);
         }
     }
     /**
-     * @param (array|mixed)[] $updates
+     * @param array<(array|mixed)> $updates
      */
     public function feed(array $updates): void
     {
-        $this->API->logger->logger('Was fed updates of type '.$updates['_'].'...', \danog\MadelineProto\Logger::VERBOSE);
+        $this->API->logger->logger('Was fed updates of type '.$updates['_'].'...', Logger::VERBOSE);
         $this->incomingUpdates[] = $updates;
     }
     /**
-     * @var array{updates: array} $updates
+     * @param array{updates: array} $updates
      */
-    public function save(array $updates): \Generator
+    public function save(array $updates): void
     {
-        $this->pendingWakeups += (yield from $this->feeder->feed($updates['updates']));
+        $this->pendingWakeups += ($this->feeder->feed($updates['updates']));
     }
     /**
-     * @param true[] $wakeups
+     * @param array<true> $wakeups
      */
     public function addPendingWakeups(array $wakeups): void
     {

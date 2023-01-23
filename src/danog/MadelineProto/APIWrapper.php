@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * API wrapper module.
  *
@@ -10,28 +13,22 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  * @author    Daniil Gentili <daniil@daniil.it>
- * @copyright 2016-2020 Daniil Gentili <daniil@daniil.it>
+ * @copyright 2016-2023 Daniil Gentili <daniil@daniil.it>
  * @license   https://opensource.org/licenses/AGPL-3.0 AGPLv3
- *
  * @link https://docs.madelineproto.xyz MadelineProto documentation
  */
 
 namespace danog\MadelineProto;
 
-use Amp\Promise;
-use Amp\Success;
 use danog\MadelineProto\Ipc\Client;
-
-use function Amp\File\openFile;
 
 final class APIWrapper
 {
     /**
      * MTProto instance.
      *
-     * @var MTProto|null|Client
      */
-    private $API = null;
+    private MTProto|Client|null $API = null;
 
     /**
      * Session path.
@@ -39,53 +36,12 @@ final class APIWrapper
     public SessionPaths $session;
 
     /**
-     * Getting API ID flag.
-     *
-     * @var bool
-     */
-    private bool $gettingApiId = false;
-
-    /**
      * Web API template.
-     *
-     * @var string
      */
     private string $webApiTemplate = '';
 
     /**
-     * My.telegram.org wrapper.
-     *
-     * @var ?MyTelegramOrgWrapper
-     */
-    private $myTelegramOrgWrapper;
-
-    /**
-     * Serialization date.
-     *
-     * @var integer
-     */
-    private int $serialized = 0;
-    /**
-     * Whether lua is being used.
-     *
-     * @internal
-     *
-     * @var boolean
-     */
-    private bool $lua = false;
-    /**
-     * Whether async is enabled.
-     *
-     * @internal
-     *
-     * @var boolean
-     */
-    private bool $async = false;
-
-    /**
      * AbstractAPIFactory instance.
-     *
-     * @var AbstractAPIFactory
      */
     private AbstractAPIFactory $factory;
 
@@ -111,9 +67,9 @@ final class APIWrapper
      * @param API|APIWrapper $a Instance to which link
      * @param API|APIWrapper $b Instance from which link
      *
-     * @return void
+     * @psalm-suppress InvalidPassByReference
      */
-    public static function link($a, $b): void
+    public static function link(API|APIWrapper $a, API|APIWrapper $b): void
     {
         foreach (self::properties() as $var) {
             Tools::setVar($a, $var, Tools::getVar($b, $var));
@@ -123,18 +79,14 @@ final class APIWrapper
 
     /**
      * Property list.
-     *
-     * @return array
      */
     public static function properties(): array
     {
-        return ['API', 'webApiTemplate', 'gettingApiId', 'myTelegramOrgWrapper', 'storage', 'lua'];
+        return ['API', 'webApiTemplate', 'storage'];
     }
 
     /**
      * Sleep function.
-     *
-     * @return array
      */
     public function __sleep(): array
     {
@@ -144,27 +96,14 @@ final class APIWrapper
     /**
      * Get MTProto instance.
      *
-     * @return Client|MTProto|null
      */
-    public function &getAPI()
+    public function &getAPI(): Client|MTProto|null
     {
         return $this->API;
     }
 
     /**
-     * Whether async is being used.
-     *
-     * @return boolean
-     */
-    public function isAsync(): bool
-    {
-        return $this->async;
-    }
-
-    /**
      * Get API factory.
-     *
-     * @return AbstractAPIFactory
      */
     public function getFactory(): AbstractAPIFactory
     {
@@ -175,8 +114,6 @@ final class APIWrapper
      * Get IPC path.
      *
      * @internal
-     *
-     * @return string
      */
     public function getIpcPath(): string
     {
@@ -185,46 +122,36 @@ final class APIWrapper
 
     /**
      * Serialize session.
-     *
-     * @return Promise<bool>
      */
-    public function serialize(): Promise
+    public function serialize(): bool
     {
-        if ($this->API === null && !$this->gettingApiId) {
-            return new Success(false);
+        if ($this->API === null) {
+            return false;
         }
         if ($this->API instanceof Client) {
-            return new Success(false);
+            return false;
         }
-        return Tools::callFork((function (): \Generator {
-            if ($this->API) {
-                yield from $this->API->initAsynchronously();
-            }
+        if ($this->API) {
+            $this->API->waitForInit();
+        }
 
-            yield from $this->session->serialize(
-                $this->API ? yield from $this->API->serializeSession($this) : $this,
-                $this->session->getSessionPath()
-            );
+        $this->session->serialize(
+            $this->API->serializeSession($this),
+            $this->session->getSessionPath(),
+        );
 
-            if ($this->API) {
-                yield from $this->session->storeLightState($this->API);
-            }
+        if ($this->API) {
+            $this->session->storeLightState($this->API);
+        }
 
-
-            // Truncate legacy session
-            yield (yield openFile($this->session->getLegacySessionPath(), 'w'))->close();
-
-            if (!Magic::$suspendPeriodicLogging) {
-                Logger::log('Saved session!');
-            }
-            return true;
-        })());
+        if (!Magic::$suspendPeriodicLogging) {
+            Logger::log('Saved session!');
+        }
+        return true;
     }
 
     /**
      * Get session path.
-     *
-     * @return SessionPaths
      */
     public function getSession(): SessionPaths
     {

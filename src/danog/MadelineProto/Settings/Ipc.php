@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace danog\MadelineProto\Settings;
 
 use danog\MadelineProto\Magic;
@@ -8,7 +10,7 @@ use danog\MadelineProto\SettingsAbstract;
 /**
  * IPC server settings.
  */
-class Ipc extends SettingsAbstract
+final class Ipc extends SettingsAbstract
 {
     public function __construct()
     {
@@ -21,8 +23,6 @@ class Ipc extends SettingsAbstract
 
     /**
      * Get WARNING: this will cause slow startup if enabled.
-     *
-     * @return bool
      */
     public function getSlow(): bool
     {

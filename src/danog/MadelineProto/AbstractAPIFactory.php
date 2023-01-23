@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * APIFactory module.
  *
@@ -11,44 +13,24 @@
  * If not, see <http://www.gnu.org/licenses/>.
  *
  * @author    Daniil Gentili <daniil@daniil.it>
- * @copyright 2016-2020 Daniil Gentili <daniil@daniil.it>
+ * @copyright 2016-2023 Daniil Gentili <daniil@daniil.it>
  * @license   https://opensource.org/licenses/AGPL-3.0 AGPLv3
- *
  * @link https://docs.madelineproto.xyz MadelineProto documentation
  */
 
 namespace danog\MadelineProto;
 
-use danog\MadelineProto\Async\AsyncConstruct;
 use danog\MadelineProto\Ipc\Client;
 use InvalidArgumentException;
 
-abstract class AbstractAPIFactory extends AsyncConstruct
+abstract class AbstractAPIFactory
 {
     /**
      * Namespace.
      *
      * @internal
-     *
-     * @var string
      */
     private string $namespace = '';
-    /**
-     * Whether lua is being used.
-     *
-     * @internal
-     *
-     * @var boolean
-     */
-    public bool $lua = false;
-    /**
-     * Whether async is enabled.
-     *
-     * @internal
-     *
-     * @var boolean
-     */
-    protected bool $async = false;
     /**
      * Method list.
      *
@@ -65,12 +47,10 @@ abstract class AbstractAPIFactory extends AsyncConstruct
      * Export APIFactory instance with the specified namespace.
      *
      * @param string $namespace Namespace
-     *
-     * @return self
      */
     protected function exportNamespace(string $namespace = ''): self
     {
-        $class = \array_reverse(\array_values(\class_parents(static::class)))[$namespace ? 2 : 3];
+        $class = \array_reverse(\array_values(\class_parents(static::class)))[$namespace ? 1 : 2];
 
         $instance = new $class;
         $instance->namespace = $namespace ? $namespace.'.' : '';
@@ -83,13 +63,9 @@ abstract class AbstractAPIFactory extends AsyncConstruct
      *
      * @param self $a First instance
      * @param self $b Second instance
-     *
-     * @return void
      */
     protected static function link(self $a, self $b): void
     {
-        $a->lua =& $b->lua;
-        $a->async =& $b->async;
         $a->methods =& $b->methods;
         if ($b instanceof API) {
             $a->mainAPI = $b;
@@ -100,59 +76,46 @@ abstract class AbstractAPIFactory extends AsyncConstruct
         } else {
             $a->mainAPI =& $b->mainAPI;
         }
-        if (!$b->inited()) {
-            $a->setInitPromise($b->initAsynchronously());
-        }
     }
     /**
      * Enable or disable async.
      *
-     * @param bool $async Whether to enable or disable async
-     *
-     * @return void
+     * @deprecated Starting from MadelineProto v8, async is always enabled. This function does nothing.
      */
     public function async(bool $async): void
     {
-        $this->async = $async;
     }
     /**
      * Call async wrapper function.
      *
      * @param string $name      Method name
      * @param array  $arguments Arguments
-     *
      * @internal
-     *
-     * @return mixed
      */
     public function __call(string $name, array $arguments)
     {
         if ($arguments && !isset($arguments[0])) {
             $arguments = [$arguments];
         }
-        $yielded = Tools::call($this->__call_async($name, $arguments));
-        $async = !$this->lua && ((\is_array(\end($arguments)) ? \end($arguments) : [])['async'] ?? ($this->async && $name !== 'loop'));
 
-        if ($async) {
-            return $yielded;
+        $lower_name = \strtolower($name);
+        if ($this->namespace !== '' || !isset($this->methods[$lower_name])) {
+            $name = $this->namespace.$name;
+            $aargs = isset($arguments[1]) && \is_array($arguments[1]) ? $arguments[1] : [];
+            $aargs['apifactory'] = true;
+            $args = isset($arguments[0]) && \is_array($arguments[0]) ? $arguments[0] : [];
+            if (isset($args[0]) && !isset($args['multiple'])) {
+                throw new InvalidArgumentException('Parameter names must be provided!');
+            }
+            return $this->mainAPI->API->methodCallAsyncRead($name, $args, $aargs);
         }
-
-        $yielded = Tools::wait($yielded);
-
-        if (!$this->lua) {
-            return $yielded;
+        if ($lower_name === 'seteventhandler') {
+            throw new InvalidArgumentException('Cannot call setEventHandler like this, please use MyEventHandler::startAndLoop("session.madeline", $settings);');
         }
-        try {
-            Lua::convertObjects($yielded);
-            return $yielded;
-        } catch (\Throwable $e) {
-            return ['error_code' => $e->getCode(), 'error' => $e->getMessage()];
-        }
+        return $this->methods[$lower_name](...$arguments);
     }
     /**
      * Info to dump.
-     *
-     * @return array
      */
     public function __debugInfo(): array
     {
@@ -167,63 +130,25 @@ abstract class AbstractAPIFactory extends AsyncConstruct
     }
     /**
      * Sleep function.
-     *
-     * @return array
      */
-    public function __sleep()
+    public function __sleep(): array
     {
         return [];
-    }
-    /**
-     * Call async wrapper function.
-     *
-     * @param string $name      Method name
-     * @param array  $arguments Arguments
-     *
-     * @internal
-     *
-     * @return \Generator
-     */
-    public function __call_async(string $name, array $arguments): \Generator
-    {
-        yield from $this->initAsynchronously();
-        $lower_name = \strtolower($name);
-        if ($this->namespace !== '' || !isset($this->methods[$lower_name])) {
-            $name = $this->namespace.$name;
-            $aargs = isset($arguments[1]) && \is_array($arguments[1]) ? $arguments[1] : [];
-            $aargs['apifactory'] = true;
-            $args = isset($arguments[0]) && \is_array($arguments[0]) ? $arguments[0] : [];
-            if (isset($args[0]) && !isset($args['multiple'])) {
-                throw new InvalidArgumentException("Parameter names must be provided!");
-            }
-            return yield from $this->mainAPI->API->methodCallAsyncRead($name, $args, $aargs);
-        }
-        if ($lower_name === 'seteventhandler'
-            || ($lower_name === 'loop' && !isset($arguments[0]))
-        ) {
-            yield from $this->mainAPI->reconnectFull();
-        }
-        $res = $this->methods[$lower_name](...$arguments);
-        return $res instanceof \Generator ? yield from $res : yield $res;
     }
     /**
      * Get fully resolved method list for object, including snake_case and camelCase variants.
      *
      * @param API|MTProto|Client $value Value
      * @param string             $class Custom class name
-     *
-     * @return array
      */
-    protected static function getInternalMethodList($value, string $class = null): array
+    protected static function getInternalMethodList(API|MTProto|Client $value, ?string $class = null): array
     {
-        return \array_map(fn ($method) => [$value, $method], self::getInternalMethodListClass($class ?? \get_class($value)));
+        return \array_map(fn ($method) => [$value, $method], self::getInternalMethodListClass($class ?? $value::class));
     }
     /**
      * Get fully resolved method list for object, including snake_case and camelCase variants.
      *
      * @param string $class Class name
-     *
-     * @return array
      */
     protected static function getInternalMethodListClass(string $class): array
     {

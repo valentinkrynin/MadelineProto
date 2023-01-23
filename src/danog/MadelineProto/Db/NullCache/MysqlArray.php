@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace danog\MadelineProto\Db\NullCache;
 
 use danog\MadelineProto\Db\MysqlArray as DbMysqlArray;
@@ -9,7 +11,7 @@ use danog\MadelineProto\Db\MysqlArray as DbMysqlArray;
  *
  * @internal
  */
-class MysqlArray extends DbMysqlArray
+final class MysqlArray extends DbMysqlArray
 {
     use NullCacheTrait;
 }

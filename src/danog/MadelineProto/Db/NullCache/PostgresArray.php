@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace danog\MadelineProto\Db\NullCache;
 
 use danog\MadelineProto\Db\PostgresArray as DbPostgresArray;
@@ -9,7 +11,7 @@ use danog\MadelineProto\Db\PostgresArray as DbPostgresArray;
  *
  * @internal
  */
-class PostgresArray extends DbPostgresArray
+final class PostgresArray extends DbPostgresArray
 {
     use NullCacheTrait;
 }
