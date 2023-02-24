@@ -35,7 +35,6 @@ trait Ads
      * See [the API documentation](https://core.telegram.org/api/sponsored-messages) for more info on how to handle sponsored messages.
      *
      * @param int|array $peer Channel ID, or Update, or Message, or Peer.
-     * @return \Generator
      */
     public function getSponsoredMessages($peer): \Generator
     {
@@ -44,7 +43,13 @@ trait Ads
         if ($cache && $cache[0] > \time()) {
             return $cache[1];
         }
-        $result = (yield from $this->methodCallAsyncRead('channels.getSponsoredMessages', ['channel' => $peer]))['messages'];
+        $result = (yield from $this->methodCallAsyncRead('channels.getSponsoredMessages', ['channel' => $peer]));
+        if (\array_key_exists('messages', $result)) {
+            $result = $result['messages'];
+        } else {
+            $result = null;
+        }
+
         $this->sponsoredMessages->set($peer, [\time() + 5*60, $result]);
         return $result;
     }

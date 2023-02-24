@@ -73,9 +73,8 @@ class CombinedUpdatesState
      *
      * @param int $channel Channel whose state should be removed
      *
-     * @return void
      */
-    public function remove(int $channel)
+    public function remove(int $channel): void
     {
         if (isset($this->states[$channel])) {
             unset($this->states[$channel]);
@@ -86,7 +85,6 @@ class CombinedUpdatesState
      *
      * @param int $channel Channel ID
      *
-     * @return bool
      */
     public function has(int $channel): bool
     {
@@ -98,7 +96,6 @@ class CombinedUpdatesState
      * @param int       $channel Channel to get info about
      * @param bool|null $set     Busy flag to set before returning
      *
-     * @return bool
      */
     public function syncLoading(int $channel, bool $set = null): bool
     {

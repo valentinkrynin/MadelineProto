@@ -23,6 +23,7 @@ use Amp\ByteStream\ClosedException;
 use Amp\CancellationToken;
 use Amp\Promise;
 use Amp\Socket\Socket;
+use Amp\Success;
 use danog\MadelineProto\Stream\Async\RawStream;
 use danog\MadelineProto\Stream\ConnectionContext;
 use danog\MadelineProto\Stream\ProxyStreamInterface;
@@ -59,7 +60,6 @@ class PremadeStream implements RawStreamInterface, ProxyStreamInterface
     /**
      * Async chunked read.
      *
-     * @return Promise
      */
     public function read(): Promise
     {
@@ -70,7 +70,6 @@ class PremadeStream implements RawStreamInterface, ProxyStreamInterface
      *
      * @param string $data Data to write
      *
-     * @return Promise
      */
     public function write(string $data): Promise
     {
@@ -81,10 +80,8 @@ class PremadeStream implements RawStreamInterface, ProxyStreamInterface
     }
     /**
      * Async close.
-     *
-     * @return void
      */
-    public function disconnect()
+    public function disconnect(): Promise
     {
         try {
             if ($this->stream) {
@@ -96,6 +93,7 @@ class PremadeStream implements RawStreamInterface, ProxyStreamInterface
         } catch (\Throwable $e) {
             \danog\MadelineProto\Logger::log('Got exception while closing stream: '.$e->getMessage());
         }
+        return new Success();
     }
     public function close(): void
     {
@@ -104,7 +102,6 @@ class PremadeStream implements RawStreamInterface, ProxyStreamInterface
     /**
      * {@inheritdoc}
      *
-     * @return \Amp\Socket\Socket
      */
     public function getSocket(): Socket
     {
@@ -113,7 +110,7 @@ class PremadeStream implements RawStreamInterface, ProxyStreamInterface
     /**
      * {@inheritdoc}
      */
-    public function setExtra($extra)
+    public function setExtra($extra): void
     {
         $this->stream = $extra;
     }

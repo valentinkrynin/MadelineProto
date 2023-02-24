@@ -26,6 +26,7 @@ use Amp\Socket\ClientTlsContext;
 use Amp\Socket\Connector;
 use Amp\Socket\EncryptableSocket;
 use Amp\Socket\Socket;
+use Amp\Success;
 use danog\MadelineProto\Stream\Async\RawStream;
 use danog\MadelineProto\Stream\ProxyStreamInterface;
 use danog\MadelineProto\Stream\RawStreamInterface;
@@ -81,7 +82,6 @@ class DefaultStream implements RawStreamInterface, ProxyStreamInterface
     /**
      * Async chunked read.
      *
-     * @return Promise
      */
     public function read(): Promise
     {
@@ -92,7 +92,6 @@ class DefaultStream implements RawStreamInterface, ProxyStreamInterface
      *
      * @param string $data Data to write
      *
-     * @return Promise
      */
     public function write(string $data): Promise
     {
@@ -103,10 +102,8 @@ class DefaultStream implements RawStreamInterface, ProxyStreamInterface
     }
     /**
      * Close.
-     *
-     * @return void
      */
-    public function disconnect()
+    public function disconnect(): Promise
     {
         try {
             if ($this->stream) {
@@ -116,26 +113,25 @@ class DefaultStream implements RawStreamInterface, ProxyStreamInterface
         } catch (\Throwable $e) {
             \danog\MadelineProto\Logger::log('Got exception while closing stream: '.$e->getMessage());
         }
+        return new Success();
     }
     /**
      * Close.
      *
-     * @return void
      */
-    public function close()
+    public function close(): void
     {
         $this->disconnect();
     }
     /**
      * {@inheritdoc}
      *
-     * @return EncryptableSocket
      */
     public function getSocket(): EncryptableSocket
     {
         return $this->stream;
     }
-    public function setExtra($extra)
+    public function setExtra($extra): void
     {
         $this->connector = $extra;
     }

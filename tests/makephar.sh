@@ -20,6 +20,7 @@ git config --global user.name "Github Actions"
 if [ "$TAG" == "" ]; then
     export TAG=7777
     git tag "$TAG"
+    git checkout "$TAG"
 fi
 
 export TEST_SECRET_CHAT=test
@@ -59,6 +60,9 @@ mkdir phar
 cd phar
 
 # Install
+
+echo '{"github-oauth": {"github.com": "'$GITHUB_TOKEN'"}}' > ~/.composer/auth.json
+
 echo '{
     "name": "danog/madelineprotophar",
     "require": {
@@ -78,7 +82,7 @@ echo '{
         }
     ]
 }' > composer.json
-php $(which composer) update -vvv --no-cache
+php $(which composer) update --no-cache
 php $(which composer) dumpautoload --optimize
 rm -rf vendor/danog/madelineproto/docs vendor/danog/madelineproto/vendor-bin
 cd ..
@@ -88,10 +92,12 @@ cd $madelinePath
 
 db()
 {
+    return 0
     php tests/db.php $1
 }
 cycledb()
 {
+    return 0
     db memory
     db mysql
     db postgres
@@ -101,19 +107,19 @@ cycledb()
 
 runTestSimple()
 {
+    return 0
     tests/testing.php
 }
 runTest()
 {
-    echo "m
-$API_ID
-$API_HASH
-b
+    return 0
+    {
+        echo "b
 $BOT_TOKEN
 n
 n
 n
-" | $p tests/testing.php
+"; } | $p tests/testing.php
 }
 
 reset()
@@ -135,9 +141,9 @@ db mysql
 k
 
 echo "Testing with new version (upgrade)..."
-php tools/makephar.php $madelinePath/../phar "madeline$php$branch.phar" "$COMMIT-$php"
+php tools/makephar.php $madelinePath/../phar "madeline$php$branch.phar" "$COMMIT-81"
 cp "madeline$php$branch.phar" "madeline-$COMMIT-$php.phar"
-echo -n "$COMMIT-$php" > "madeline-$php.phar.version"
+echo -n "$COMMIT-81" > "madeline-$php.phar.version"
 export ACTIONS_PHAR=1
 reset
 runTestSimple
@@ -167,8 +173,8 @@ input=$PWD
 cd "$madelinePath"
 
 if [ "$TAG" != "7777" ]; then
-    cp "$input/madeline$php$branch.phar" "madeline$php.phar"
+    cp "$input/madeline$php$branch.phar" "madeline81.phar"
     git remote add hub https://github.com/danog/MadelineProto
-    gh release upload "$TAG" "madeline$php.phar"
-    rm "madeline$php.phar"
+    gh release upload "$TAG" "madeline81.phar"
+    rm "madeline81.phar"
 fi

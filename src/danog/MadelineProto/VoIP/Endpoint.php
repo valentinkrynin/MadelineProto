@@ -53,10 +53,7 @@ class Endpoint
     /**
      * Create endpoint.
      *
-     * @param string $ip
      * @param integer $port
-     * @param string $peerTag
-     * @param VoIP $instance
      */
     public function __construct(string $ip, int $port, string $peerTag, bool $reflector, VoIP $instance)
     {
@@ -72,7 +69,6 @@ class Endpoint
     /**
      * Connect to endpoint.
      *
-     * @return \Generator
      */
     public function connect(): \Generator
     {
@@ -82,19 +78,18 @@ class Endpoint
     /**
      * Disconnect from endpoint.
      *
-     * @return void
      */
-    public function disconnect(): void
+    public function disconnect(): Promise
     {
         if ($this->socket !== null) {
             $this->socket->close();
             $this->socket = null;
         }
+        return new Success();
     }
     /**
      * Read packet.
      *
-     * @return \Generator
      */
     public function read(): \Generator
     {
@@ -147,8 +142,6 @@ class Endpoint
     /**
      * Write data.
      *
-     * @param string $payload
-     * @return Promise
      */
     public function write(string $payload): Promise
     {
@@ -174,7 +167,6 @@ class Endpoint
     /**
      * Get peer tag.
      *
-     * @return string
      */
     public function getPeerTag(): string
     {

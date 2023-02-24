@@ -19,6 +19,7 @@
 
 namespace danog\MadelineProto\Stream;
 
+use Amp\Promise;
 use Amp\Socket\EncryptableSocket;
 use Amp\Socket\Socket;
 
@@ -34,15 +35,12 @@ interface StreamInterface
      *
      * @param ConnectionContext $ctx The connection context
      *
-     * @return \Generator
      */
     public function connect(ConnectionContext $ctx, string $header = ''): \Generator;
     /**
      * Disconnect from the server.
-     *
-     * @return void
      */
-    public function disconnect();
+    public function disconnect(): Promise;
     /**
      * Get underlying AMPHP socket resource.
      *

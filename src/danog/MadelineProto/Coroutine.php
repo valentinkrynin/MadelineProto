@@ -61,9 +61,7 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
     private $value;
     /** @var ?self Reference to coroutine that started this coroutine */
     private $parentCoroutine;
-    /**
-     * @param \Generator $generator
-     */
+
     public function __construct(\Generator $generator)
     {
         $this->generator = $generator;
@@ -156,7 +154,6 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
      *
      * @internal
      *
-     * @return mixed
      */
     public function throw(\Throwable $reason)
     {
@@ -168,7 +165,6 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
     /**
      * @param \Throwable $reason Failure reason.
      *
-     * @return void
      */
     public function fail(\Throwable $reason): void
     {
@@ -183,7 +179,6 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
      *
      * @param mixed $offset Offset
      *
-     * @return Promise
      */
     public function offsetGet(mixed $offset): Promise
     {
@@ -235,7 +230,6 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
     /**
      * Get current stack trace for running coroutine.
      *
-     * @return array
      */
     public function getTrace(): array
     {
@@ -254,7 +248,6 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
     /**
      * Get current execution frame.
      *
-     * @return array
      */
     public function getFrame(): array
     {
@@ -275,7 +268,6 @@ final class Coroutine implements Promise, \ArrayAccess, JsonSerializable
     /**
      * Obtain.
      *
-     * @return string
      */
     public function jsonSerialize(): string
     {

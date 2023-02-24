@@ -83,7 +83,6 @@ class ReferenceDatabase implements TLCallback
     /**
      * List of properties stored in database (memory or external).
      * @see DbPropertiesFactory
-     * @var array
      */
     protected static array $dbProperties = [
         'db' => 'array',
@@ -247,6 +246,17 @@ class ReferenceDatabase implements TLCallback
                 $origin['user_id'] = $data['user_id'];
                 break;
             case 'userFull':
+                if (!isset($data['profile_photo'])) {
+                    $key = \count($this->cacheContexts) - 1;
+                    if (!isset($this->cache[$key])) {
+                        $this->cache[$key] = [];
+                    }
+                    foreach ($cache as $location => $reference) {
+                        $this->cache[$key][$location] = $reference;
+                    }
+                    $this->API->logger->logger("Skipped origin {$originType} ({$data['_']}) for ".\count($cache).' references', Logger::ULTRA_VERBOSE);
+                    return;
+                }
                 $origin['max_id'] = $data['profile_photo']['id'];
                 $origin['offset'] = -1;
                 $origin['limit'] = 1;
@@ -434,7 +444,7 @@ class ReferenceDatabase implements TLCallback
                     }
                     yield from $this->API->methodCallAsyncRead('messages.getMessages', ['id' => [$origin['msg_id']]], $this->API->getSettings()->getDefaultDcParams());
                     break;
-                // Peer + photo ID
+                    // Peer + photo ID
                 case self::PEER_PHOTO_ORIGIN:
                     $fullChat = yield $this->API->full_chats[$origin['peer']];
                     if (isset($fullChat['last_update'])) {
@@ -443,7 +453,7 @@ class ReferenceDatabase implements TLCallback
                     }
                     $this->API->getFullInfo($origin['peer']);
                     break;
-                // Peer (default photo ID)
+                    // Peer (default photo ID)
                 case self::USER_PHOTO_ORIGIN:
                     yield from $this->API->methodCallAsyncRead('photos.getUserPhotos', $origin, $this->API->getSettings()->getDefaultDcParams());
                     break;

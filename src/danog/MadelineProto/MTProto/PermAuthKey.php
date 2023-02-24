@@ -56,16 +56,14 @@ class PermAuthKey extends AuthKey
      *
      * @param boolean $authorized Whether we are authorized
      *
-     * @return void
      */
-    public function authorized(bool $authorized)
+    public function authorized(bool $authorized): void
     {
         $this->authorized = $authorized;
     }
     /**
      * JSON serialization function.
      *
-     * @return array
      */
     public function jsonSerialize(): array
     {

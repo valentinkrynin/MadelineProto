@@ -137,9 +137,8 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param boolean $needsReconnect Whether the socket has to be reconnected
      *
-     * @return void
      */
-    public function needReconnect(bool $needsReconnect)
+    public function needReconnect(bool $needsReconnect): void
     {
         $this->needsReconnect = $needsReconnect;
     }
@@ -158,7 +157,6 @@ class DataCenterConnection implements JsonSerializable
      *
      * @internal
      *
-     * @return \Generator
      */
     public function initAuthorization(): \Generator
     {
@@ -220,11 +218,9 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Bind temporary and permanent auth keys.
      *
-     * @param integer $expires_in Date of expiry for binding
      *
      * @internal
      *
-     * @return \Generator
      *
      * @psalm-return \Generator<int|mixed, array|mixed, mixed, true>
      */
@@ -268,7 +264,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Sync authorization data between DCs.
      *
-     * @return \Generator
      */
     private function syncAuthorization(): \Generator
     {
@@ -310,7 +305,6 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param boolean $temp Whether to fetch the temporary auth key
      *
-     * @return AuthKey
      */
     public function getAuthKey(bool $temp = true): AuthKey
     {
@@ -322,9 +316,7 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Check if auth key is present.
      *
-     * @param bool $temp
      *
-     * @return bool
      */
     public function hasAuthKey(bool $temp = true): bool
     {
@@ -334,9 +326,7 @@ class DataCenterConnection implements JsonSerializable
      * Set auth key.
      *
      * @param AuthKey|null $key  The auth key
-     * @param bool $temp
      *
-     * @return void
      */
     public function setAuthKey(?AuthKey $key, bool $temp = true): void
     {
@@ -345,7 +335,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Get temporary authorization key.
      *
-     * @return TempAuthKey
      */
     public function getTempAuthKey(): TempAuthKey
     {
@@ -354,7 +343,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Get permanent authorization key.
      *
-     * @return PermAuthKey
      */
     public function getPermAuthKey(): PermAuthKey
     {
@@ -383,7 +371,6 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param TempAuthKey|null $key Auth key
      *
-     * @return void
      */
     public function setTempAuthKey(?TempAuthKey $key): void
     {
@@ -394,7 +381,6 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param PermAuthKey|null $key Auth key
      *
-     * @return void
      */
     public function setPermAuthKey(?PermAuthKey $key): void
     {
@@ -405,9 +391,8 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param bool $pfs Whether to bind using PFS
      *
-     * @return void
      */
-    public function bind(bool $pfs = true)
+    public function bind(bool $pfs = true): void
     {
         if (!$pfs && !$this->tempAuthKey) {
             $this->tempAuthKey = new TempAuthKey();
@@ -437,9 +422,8 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param boolean $authorized Whether we are authorized
      *
-     * @return void
      */
-    public function authorized(bool $authorized)
+    public function authorized(bool $authorized): void
     {
         if ($authorized) {
             $this->getTempAuthKey()->authorized($authorized);
@@ -452,9 +436,8 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param string $dc Main DC ID
      *
-     * @return void
      */
-    public function link(string $dc)
+    public function link(string $dc): void
     {
         $this->linked = $dc;
         $this->permAuthKey =& $this->API->datacenter->getDataCenterConnection($dc)->permAuthKey;
@@ -462,9 +445,8 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Reset MTProto sessions.
      *
-     * @return void
      */
-    public function resetSession()
+    public function resetSession(): void
     {
         foreach ($this->connections as $socket) {
             $socket->resetSession();
@@ -473,9 +455,8 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Create MTProto sessions if needed.
      *
-     * @return void
      */
-    public function createSession()
+    public function createSession(): void
     {
         foreach ($this->connections as $socket) {
             $socket->createSession();
@@ -484,7 +465,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Flush all pending packets.
      *
-     * @return void
      */
     public function flush(): void
     {
@@ -496,7 +476,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Get connection context.
      *
-     * @return ConnectionContext
      */
     public function getCtx(): ConnectionContext
     {
@@ -505,7 +484,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Has connection context?
      *
-     * @return bool
      */
     public function hasCtx(): bool
     {
@@ -517,7 +495,6 @@ class DataCenterConnection implements JsonSerializable
      * @param ConnectionContext $ctx Connection context
      * @param int               $id  Optional connection ID to reconnect
      *
-     * @return \Generator
      */
     public function connect(ConnectionContext $ctx, int $id = -1): \Generator
     {
@@ -557,7 +534,6 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param integer $count Number of sockets to open
      *
-     * @return \Generator
      */
     private function connectMore(int $count): \Generator
     {
@@ -577,9 +553,8 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param integer $id Connection ID
      *
-     * @return void
      */
-    public function signalDisconnect(int $id)
+    public function signalDisconnect(int $id): void
     {
         $backup = $this->connections[$id]->backupSession();
         $list = '';
@@ -600,7 +575,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Close all connections to DC.
      *
-     * @return void
      */
     public function disconnect(): void
     {
@@ -623,7 +597,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Reconnect to DC.
      *
-     * @return \Generator
      */
     public function reconnect(): \Generator
     {
@@ -634,9 +607,8 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Restore backed up messages.
      *
-     * @return void
      */
-    public function restoreBackup()
+    public function restoreBackup(): void
     {
         $backup = $this->backup;
         $this->backup = [];
@@ -659,7 +631,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Get connection for authorization.
      *
-     * @return Connection
      */
     public function getAuthConnection(): Connection
     {
@@ -679,7 +650,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Get best socket in round robin, asynchronously.
      *
-     * @return \Generator
      *
      * @psalm-return \Generator<int, Promise, mixed, Connection>
      */
@@ -695,7 +665,6 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param integer $id Connection ID, for manual fetching
      *
-     * @return Connection
      */
     public function getConnection(int $id = -1): Connection
     {
@@ -714,9 +683,8 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Even out round robin values.
      *
-     * @return void
      */
-    public function even()
+    public function even(): void
     {
         if (!$this->availableConnections) {
             return;
@@ -743,9 +711,8 @@ class DataCenterConnection implements JsonSerializable
      * @param boolean $reading Whether we're busy reading
      * @param int     $x       Connection ID
      *
-     * @return void
      */
-    public function reading(bool $reading, int $x)
+    public function reading(bool $reading, int $x): void
     {
         if (!isset($this->availableConnections[$x])) {
             return;
@@ -758,9 +725,8 @@ class DataCenterConnection implements JsonSerializable
      * @param boolean $writing Whether we're busy writing
      * @param int     $x       Connection ID
      *
-     * @return void
      */
-    public function writing(bool $writing, int $x)
+    public function writing(bool $writing, int $x): void
     {
         if (!isset($this->availableConnections[$x])) {
             return;
@@ -772,9 +738,8 @@ class DataCenterConnection implements JsonSerializable
      *
      * @param MTProto $API Main instance
      *
-     * @return void
      */
-    public function setExtra($API)
+    public function setExtra($API): void
     {
         $this->API = $API;
     }
@@ -826,7 +791,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Get DC-specific settings.
      *
-     * @return ConnectionSettings
      */
     public function getSettings(): ConnectionSettings
     {
@@ -835,7 +799,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * Get global settings.
      *
-     * @return Settings
      */
     public function getGenericSettings(): Settings
     {
@@ -844,7 +807,6 @@ class DataCenterConnection implements JsonSerializable
     /**
      * JSON serialize function.
      *
-     * @return array
      */
     public function jsonSerialize(): array
     {

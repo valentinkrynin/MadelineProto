@@ -19,7 +19,6 @@
 
 namespace danog\MadelineProto\Stream\MTProtoTransport;
 
-use Amp\Promise;
 use Amp\Socket\EncryptableSocket;
 use danog\MadelineProto\Stream\Async\BufferedStream;
 use danog\MadelineProto\Stream\BufferedStreamInterface;
@@ -44,9 +43,7 @@ class FullStream implements BufferedStreamInterface, MTProtoBufferInterface
     /**
      * Stream to use as data source.
      *
-     * @param ConnectionContext $ctx
      *
-     * @return \Generator
      */
     public function connect(ConnectionContext $ctx, string $header = ''): \Generator
     {
@@ -59,9 +56,8 @@ class FullStream implements BufferedStreamInterface, MTProtoBufferInterface
     /**
      * Async close.
      *
-     * @return Promise
      */
-    public function disconnect()
+    public function disconnect(): \Amp\Promise
     {
         return $this->stream->disconnect();
     }
@@ -70,7 +66,6 @@ class FullStream implements BufferedStreamInterface, MTProtoBufferInterface
      *
      * @param int $length Length of data that is going to be written to the write buffer
      *
-     * @return \Generator
      */
     public function getWriteBufferGenerator(int $length, string $append = ''): \Generator
     {
@@ -86,7 +81,6 @@ class FullStream implements BufferedStreamInterface, MTProtoBufferInterface
      *
      * @param int $length Length of payload, as detected by this layer
      *
-     * @return \Generator
      */
     public function getReadBufferGenerator(&$length): \Generator
     {
@@ -105,7 +99,6 @@ class FullStream implements BufferedStreamInterface, MTProtoBufferInterface
     /**
      * {@inheritdoc}
      *
-     * @return EncryptableSocket
      */
     public function getSocket(): EncryptableSocket
     {
@@ -114,7 +107,6 @@ class FullStream implements BufferedStreamInterface, MTProtoBufferInterface
     /**
      * {@inheritDoc}
      *
-     * @return RawStreamInterface
      */
     public function getStream(): RawStreamInterface
     {

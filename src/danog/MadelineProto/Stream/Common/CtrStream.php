@@ -53,7 +53,6 @@ class CtrStream implements BufferedProxyStreamInterface, BufferInterface
      *
      * @param ConnectionContext $ctx The connection context
      *
-     * @return \Generator
      */
     public function connect(ConnectionContext $ctx, string $header = ''): \Generator
     {
@@ -70,9 +69,8 @@ class CtrStream implements BufferedProxyStreamInterface, BufferInterface
     /**
      * Async close.
      *
-     * @return Promise
      */
-    public function disconnect()
+    public function disconnect(): \Amp\Promise
     {
         return $this->stream->disconnect();
     }
@@ -81,7 +79,6 @@ class CtrStream implements BufferedProxyStreamInterface, BufferInterface
      *
      * @param int $length Length of data that is going to be written to the write buffer
      *
-     * @return \Generator
      */
     public function getWriteBufferGenerator(int $length, string $append = ''): \Generator
     {
@@ -97,7 +94,6 @@ class CtrStream implements BufferedProxyStreamInterface, BufferInterface
      *
      * @param int $length Length of payload, as detected by this layer
      *
-     * @return \Generator
      */
     public function getReadBufferGenerator(&$length): \Generator
     {
@@ -107,7 +103,6 @@ class CtrStream implements BufferedProxyStreamInterface, BufferInterface
     /**
      * Decrypts read data asynchronously.
      *
-     * @param Promise $promise Promise that resolves with a string when new data is available or `null` if the stream has closed.
      *
      * @return \Generator That resolves with a string when the provided promise is resolved and the data is decrypted
      */
@@ -142,16 +137,14 @@ class CtrStream implements BufferedProxyStreamInterface, BufferInterface
      *
      * @param array $data Keys
      *
-     * @return void
      */
-    public function setExtra($data)
+    public function setExtra($data): void
     {
         $this->extra = $data;
     }
     /**
      * {@inheritdoc}
      *
-     * @return EncryptableSocket
      */
     public function getSocket(): EncryptableSocket
     {
@@ -160,7 +153,6 @@ class CtrStream implements BufferedProxyStreamInterface, BufferInterface
     /**
      * {@inheritDoc}
      *
-     * @return RawStreamInterface
      */
     public function getStream(): RawStreamInterface
     {

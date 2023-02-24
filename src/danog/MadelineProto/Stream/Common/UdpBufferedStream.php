@@ -47,7 +47,6 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
      *
      * @param ConnectionContext $ctx The connection context
      *
-     * @return \Generator
      */
     public function connect(ConnectionContext $ctx, string $header = ''): \Generator
     {
@@ -56,9 +55,8 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
     /**
      * Async close.
      *
-     * @return Promise
      */
-    public function disconnect()
+    public function disconnect(): \Amp\Promise
     {
         return $this->stream->disconnect();
     }
@@ -67,7 +65,6 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
      *
      * @param int $length Length of payload, as detected by this layer
      *
-     * @return \Generator
      *
      * @psalm-return \Generator<int, Promise, mixed, Failure<mixed>|Success<object>>
      */
@@ -125,7 +122,6 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
      *
      * @param int $length Total length of data that is going to be piped in the buffer
      *
-     * @return Promise
      */
     public function getWriteBuffer(int $length, string $append = ''): Promise
     {
@@ -139,8 +135,6 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
              * Constructor function.
              *
              * @param integer $length
-             * @param string $append
-             * @param RawStreamInterface $rawStreamInterface
              */
             public function __construct(int $length, string $append, RawStreamInterface $rawStreamInterface)
             {
@@ -156,7 +150,6 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
              *
              * @param string $data Data to write
              *
-             * @return Promise
              */
             public function bufferWrite(string $data): Promise
             {
@@ -180,7 +173,6 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
     /**
      * {@inheritdoc}
      *
-     * @return EncryptableSocket
      */
     public function getSocket(): EncryptableSocket
     {
@@ -189,7 +181,6 @@ class UdpBufferedStream extends DefaultStream implements BufferedStreamInterface
     /**
      * {@inheritDoc}
      *
-     * @return RawStreamInterface
      */
     public function getStream(): RawStreamInterface
     {

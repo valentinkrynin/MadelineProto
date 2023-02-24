@@ -83,9 +83,8 @@ class AnnotationsBuilder
      * Insert properties
      * save the file with new content.
      *
-     * @return void
      */
-    private function setProperties()
+    private function setProperties(): void
     {
         \danog\MadelineProto\Logger::log('Generating properties...', \danog\MadelineProto\Logger::NOTICE);
         $fixture = DocBlockFactory::createInstance();
@@ -107,7 +106,6 @@ class AnnotationsBuilder
     /**
      * Create internalDoc.
      *
-     * @return void
      */
     private function createInternalClasses(): void
     {
@@ -334,8 +332,16 @@ class AnnotationsBuilder
             }
             $promise = '\\'.Promise::class;
             $phpdoc = $method->getDocComment() ?? '';
+            if (!\str_contains($phpdoc, '@return')) {
+                if (!\trim($phpdoc)) {
+                    $phpdoc = '/** @return '.$type.' */';
+                } else {
+                    $phpdoc = \str_replace('*/', ' * @return '.$type."\n     */", $phpdoc);
+                }
+            }
             $phpdoc = \str_replace("@return \\Generator", "@return $promise", $phpdoc);
             $phpdoc = \str_replace("@return \\Promise", "@return $promise", $phpdoc);
+            $phpdoc = \str_replace("@return Generator", "@return $promise", $phpdoc);
             $phpdoc = \str_replace("@return Promise", "@return $promise", $phpdoc);
             if ($hasReturnValue && $async && \preg_match("/@return (.*)/", $phpdoc, $matches)) {
                 $ret = $matches[1];

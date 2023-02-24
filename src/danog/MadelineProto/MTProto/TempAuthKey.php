@@ -64,9 +64,8 @@ class TempAuthKey extends AuthKey implements JsonSerializable
      *
      * @param boolean $init Init or deinit
      *
-     * @return void
      */
-    public function init(bool $init = true)
+    public function init(bool $init = true): void
     {
         $this->inited = $init;
     }
@@ -85,9 +84,8 @@ class TempAuthKey extends AuthKey implements JsonSerializable
      * @param PermAuthKey|null $bound Permanent auth key
      * @param bool             $pfs   Whether to bind using PFS
      *
-     * @return void
      */
-    public function bind(?PermAuthKey $bound, bool $pfs = true)
+    public function bind(?PermAuthKey $bound, bool $pfs = true): void
     {
         $this->bound = $bound;
         if (!$pfs) {
@@ -119,9 +117,8 @@ class TempAuthKey extends AuthKey implements JsonSerializable
      *
      * @param boolean $authorized Whether we are authorized
      *
-     * @return void
      */
-    public function authorized(bool $authorized)
+    public function authorized(bool $authorized): void
     {
         $this->bound->authorized($authorized);
     }
@@ -130,9 +127,8 @@ class TempAuthKey extends AuthKey implements JsonSerializable
      *
      * @param integer $expires Expiration date
      *
-     * @return void
      */
-    public function expires(int $expires)
+    public function expires(int $expires): void
     {
         $this->expires = $expires;
     }
@@ -148,7 +144,6 @@ class TempAuthKey extends AuthKey implements JsonSerializable
     /**
      * JSON serialization function.
      *
-     * @return array
      */
     public function jsonSerialize(): array
     {
@@ -166,7 +161,6 @@ class TempAuthKey extends AuthKey implements JsonSerializable
     /**
      * Wakeup function.
      *
-     * @return void
      */
     public function __wakeup(): void
     {

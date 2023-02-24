@@ -45,9 +45,8 @@ class Shutdown
     /**
      * Function to be called on shutdown.
      *
-     * @return void
      */
-    private static function shutdown()
+    private static function shutdown(): void
     {
         foreach (self::$callbacks as $callback) {
             $callback();

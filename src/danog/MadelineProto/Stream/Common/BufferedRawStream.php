@@ -47,7 +47,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
      *
      * @param ConnectionContext $ctx Connection context
      *
-     * @return \Generator
      */
     public function connect(ConnectionContext $ctx, string $header = ''): \Generator
     {
@@ -58,7 +57,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
     /**
      * Async chunked read.
      *
-     * @return Promise
      */
     public function read(): Promise
     {
@@ -72,7 +70,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
      *
      * @param string $data Data to write
      *
-     * @return Promise
      */
     public function write(string $data): Promise
     {
@@ -83,10 +80,8 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
     }
     /**
      * Async close.
-     *
-     * @return void
      */
-    public function disconnect()
+    public function disconnect(): Promise
     {
         if ($this->memory_stream) {
             \fclose($this->memory_stream);
@@ -96,13 +91,13 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
             $this->stream->disconnect();
             $this->stream = null;
         }
+        return new Success();
     }
     /**
      * Get read buffer asynchronously.
      *
      * @param int $length Length of payload, as detected by this layer
      *
-     * @return Promise
      */
     public function getReadBuffer(&$length): Promise
     {
@@ -128,7 +123,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
      *
      * @param int $length Total length of data that is going to be piped in the buffer
      *
-     * @return Promise
      */
     public function getWriteBuffer(int $length, string $append = ''): Promise
     {
@@ -143,7 +137,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
      *
      * @param int $length Amount of data to read
      *
-     * @return Promise
      */
     public function bufferRead(int $length): Promise
     {
@@ -163,7 +156,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
      *
      * @param int $length Amount of data to read
      *
-     * @return \Generator
      */
     public function bufferReadGenerator(int $length): \Generator
     {
@@ -190,7 +182,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
      *
      * @param string $data Data to write
      *
-     * @return Promise
      */
     public function bufferWrite(string $data): Promise
     {
@@ -210,7 +201,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
     /**
      * Get remaining data from buffer.
      *
-     * @return string
      */
     public function bufferClear(): string
     {
@@ -225,7 +215,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
     /**
      * {@inheritdoc}
      *
-     * @return \Amp\Socket\Socket
      */
     public function getSocket(): \Amp\Socket\Socket
     {
@@ -234,7 +223,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
     /**
      * {@inheritDoc}
      *
-     * @return RawStreamInterface
      */
     public function getStream(): RawStreamInterface
     {
@@ -243,7 +231,6 @@ class BufferedRawStream implements BufferedStreamInterface, BufferInterface, Raw
     /**
      * Get class name.
      *
-     * @return string
      */
     public static function getName(): string
     {

@@ -99,7 +99,7 @@ class Logger extends SettingsAbstract
     /**
      * Wakeup function.
      */
-    public function __wakeup()
+    public function __wakeup(): void
     {
         $this->type = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg')
             ? MadelineProtoLogger::ECHO_LOGGER
@@ -113,9 +113,8 @@ class Logger extends SettingsAbstract
     /**
      * Initialize global logging.
      *
-     * @return void
      */
-    private function init()
+    private function init(): void
     {
         Magic::start(false);
         MadelineProtoLogger::constructorFromSettings($this);
@@ -135,7 +134,6 @@ class Logger extends SettingsAbstract
      *
      * @param MadelineProtoLogger::LOGGER_* $type $type Logger type.
      *
-     * @return self
      */
     public function setType(int $type): self
     {
@@ -166,7 +164,6 @@ class Logger extends SettingsAbstract
      *
      * @param null|callable|string $extra Extra parameter for logger.
      *
-     * @return self
      */
     public function setExtra($extra): self
     {
@@ -196,7 +193,6 @@ class Logger extends SettingsAbstract
      *
      * @param MadelineProtoLogger::LEVEL_* $level Logging level.
      *
-     * @return self
      */
     public function setLevel(int $level): self
     {
@@ -208,7 +204,6 @@ class Logger extends SettingsAbstract
     /**
      * Get maximum filesize for logger, in case of file logging.
      *
-     * @return int
      */
     public function getMaxSize(): int
     {
@@ -220,7 +215,6 @@ class Logger extends SettingsAbstract
      *
      * @param int $maxSize Maximum filesize for logger, in case of file logging.
      *
-     * @return self
      */
     public function setMaxSize(int $maxSize): self
     {

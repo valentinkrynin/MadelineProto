@@ -54,7 +54,6 @@ class UpdateLoop extends ResumableSignalLoop
     /**
      * Constructor.
      *
-     * @param MTProto $API
      * @param integer $channelId
      */
     public function __construct(MTProto $API, int $channelId)
@@ -65,7 +64,6 @@ class UpdateLoop extends ResumableSignalLoop
     /**
      * Main loop.
      *
-     * @return \Generator
      */
     public function loop(): \Generator
     {
@@ -74,7 +72,7 @@ class UpdateLoop extends ResumableSignalLoop
         if (yield from $this->waitForAuthOrSignal()) {
             return;
         }
-        $this->state = $state = $this->channelId === self::GENERIC ? yield from $API->loadUpdateState() : $API->loadChannelState($this->channelId);
+        $state = $this->channelId === self::GENERIC ? yield from $API->loadUpdateState() : $API->loadChannelState($this->channelId);
         $timeout = 10;
         $first = true;
         while (true) {
@@ -96,7 +94,7 @@ class UpdateLoop extends ResumableSignalLoop
                     }
                     $request_pts = $state->pts();
                     try {
-                        $difference = yield from $API->methodCallAsyncRead('updates.getChannelDifference', ['channel' => 'channel#'.$this->channelId, 'filter' => ['_' => 'channelMessagesFilterEmpty'], 'pts' => $request_pts, 'limit' => $limit, 'force' => true], ['datacenter' => $API->datacenter->curdc, 'postpone' => $first]);
+                        $difference = yield from $API->methodCallAsyncRead('updates.getChannelDifference', ['channel' => $this->API->toSupergroup($this->channelId), 'filter' => ['_' => 'channelMessagesFilterEmpty'], 'pts' => $request_pts, 'limit' => $limit, 'force' => true], ['datacenter' => $API->datacenter->curdc, 'postpone' => $first]);
                     } catch (RPCErrorException $e) {
                         if (\in_array($e->rpc, ['CHANNEL_PRIVATE', 'CHAT_FORBIDDEN', 'CHANNEL_INVALID', 'USER_BANNED_IN_CHANNEL'])) {
                             $feeder->signal(true);
@@ -223,7 +221,6 @@ class UpdateLoop extends ResumableSignalLoop
     /**
      * Get loop name.
      *
-     * @return string
      */
     public function __toString(): string
     {
