@@ -372,7 +372,11 @@ class Magic
             \define('AMP_WORKER', 1);
         }
         try {
-            $res = \json_decode(@\file_get_contents('https://rpc.madelineproto.xyz/v3.json'), true);
+            if (!\empty($_ENV['RPC_ERROR_EXCEPTION_JSON_LOCAL_FILEPATH']) && @\file_exists($_ENV['RPC_ERROR_EXCEPTION_JSON_LOCAL_FILEPATH'])) {
+                $res = \json_decode(@\file_get_contents($_ENV['RPC_ERROR_EXCEPTION_JSON_LOCAL_FILEPATH']), true);
+            } else {
+                $res = \json_decode(@\file_get_contents('https://rpc.madelineproto.xyz/v3.json'), true);
+            }
         } catch (\Throwable $e) {
         }
         if (isset($res, $res['ok']) && $res['ok']) {
